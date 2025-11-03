@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Page, Notice, SiteInfo } from '../types';
-import { ChevronRightIcon, DownloadIcon, ShareIcon, CopyIcon } from './Icons';
+import { ChevronRightIcon, DownloadIcon, ShareIcon, CopyIcon, ResultIcon, RoutineIcon, DigitalContentIcon } from './Icons';
 
 interface HomeProps {
     setCurrentPage: (page: Page) => void;
@@ -83,6 +83,31 @@ const NoticePreview: React.FC<{setCurrentPage: (page: Page) => void; notices: No
                     সকল নোটিশ দেখুন <ChevronRightIcon />
                 </button>
              </div>
+        </div>
+    </div>
+);
+
+const StudentCorner: React.FC = () => (
+    <div className="bg-primary py-16">
+        <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center text-white mb-12">🎓 স্টুডেন্ট কর্নার</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <a href="#" className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
+                    <ResultIcon className="w-16 h-16 text-primary mb-4" />
+                    <h3 className="text-2xl font-semibold text-gray-800 mb-2">ফলাফল</h3>
+                    <p className="text-gray-600">আপনার পরীক্ষার ফলাফল দেখুন এবং ডাউনলোড করুন।</p>
+                </a>
+                 <a href="#" className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
+                    <RoutineIcon className="w-16 h-16 text-primary mb-4" />
+                    <h3 className="text-2xl font-semibold text-gray-800 mb-2">ক্লাস রুটিন</h3>
+                    <p className="text-gray-600">সাপ্তাহিক ও পরীক্ষার রুটিন এখান থেকে দেখুন।</p>
+                </a>
+                 <a href="#" className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
+                    <DigitalContentIcon className="w-16 h-16 text-primary mb-4" />
+                    <h3 className="text-2xl font-semibold text-gray-800 mb-2">ডিজিটাল কনটেন্ট</h3>
+                    <p className="text-gray-600">অনলাইন লেকচার ও প্রয়োজনীয় শিক্ষা উপকরণ খুঁজুন।</p>
+                </a>
+            </div>
         </div>
     </div>
 );
@@ -171,6 +196,7 @@ const Home: React.FC<HomeProps> = ({setCurrentPage, notices, siteInfo}) => {
       <AboutPreview setCurrentPage={setCurrentPage} established={siteInfo.established} collegeName={siteInfo.collegeName} aboutUsPreview={siteInfo.aboutUsPreview} aboutUsImageUrl={siteInfo.aboutUsImageUrl} />
       <PrincipalMessage message={siteInfo.principalMessage} name={siteInfo.principalName} designation={siteInfo.principalDesignation} imageUrl={siteInfo.principalImageUrl} />
       <NoticePreview setCurrentPage={setCurrentPage} notices={notices} />
+      <StudentCorner />
       <ShareSection collegeName={siteInfo.collegeName} />
     </>
   );

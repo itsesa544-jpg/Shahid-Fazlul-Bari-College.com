@@ -11,16 +11,26 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
             setCurrentPage('admin');
-        } catch (err) {
-            setError('লগইন করতে ব্যর্থ হয়েছেন। ইমেইল অথবা পাসওয়ার্ড ভুল।');
-            console.error(err);
+        } catch (err: any) {
+            console.error("Login error:", err.code);
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
+                setError('এই ইমেইল দিয়ে কোনো অ্যাডমিন অ্যাকাউন্ট পাওয়া যায়নি।');
+            } else if (err.code === 'auth/wrong-password') {
+                setError('পাসওয়ার্ডটি ভুল। অনুগ্রহ করে আবার চেষ্টা করুন।');
+            } else {
+                setError('লগইন করতে ব্যর্থ হয়েছেন। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -38,6 +48,7 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage }) => {
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full p-2 mt-1 border rounded-md focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
                             required
+                            disabled={loading}
                         />
                     </div>
                     <div>
@@ -49,12 +60,17 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage }) => {
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full p-2 mt-1 border rounded-md focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
                             required
+                            disabled={loading}
                         />
                     </div>
-                    {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                    {error && <p className="text-red-500 text-sm text-center font-semibold">{error}</p>}
                     <div>
-                        <button type="submit" className="w-full py-2 px-4 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                            লগইন করুন
+                        <button 
+                            type="submit" 
+                            className={`w-full py-2 px-4 bg-primary text-white rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={loading}
+                        >
+                            {loading ? 'লোড হচ্ছে...' : 'লগইন করুন'}
                         </button>
                     </div>
                 </form>

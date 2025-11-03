@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Page, SiteInfo, SocialPlatform } from '../types';
 import { FacebookIcon, TwitterIcon, YoutubeIcon, InstagramIcon } from './Icons';

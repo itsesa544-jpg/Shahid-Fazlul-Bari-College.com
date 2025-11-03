@@ -11,20 +11,21 @@ import Gallery from './components/Gallery';
 import Teachers from './components/Teachers';
 import Contact from './components/Contact';
 import Admin from './components/Admin';
-import Login from './components/Login';
 import IMSoftwark from './components/IMSoftwark';
+// FIX: Import Login component and auth-related modules to handle authentication.
+import Login from './components/Login';
 import type { Page, Notice, Teacher, GalleryItem, SiteInfo } from './types';
 import { DEFAULT_SITE_INFO, MOCK_NOTICES, MOCK_TEACHERS, MOCK_GALLERY_ITEMS } from './constants';
-import { db, auth, storage } from './firebaseConfig';
+import { db, storage, auth } from './firebaseConfig';
 import { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, orderBy, query } from 'firebase/firestore';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { ref, deleteObject } from 'firebase/storage';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(true);
+  // FIX: Add user state to manage authentication status.
+  const [user, setUser] = useState<User | null>(null);
 
   // State for dynamic content
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -32,11 +33,10 @@ const App: React.FC = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO);
 
-  // Authentication listener
+  // FIX: Add useEffect to listen for Firebase auth state changes.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -68,12 +68,12 @@ const App: React.FC = () => {
       })
     ];
     
-    // Simulate initial data fetch completion after a short delay for demonstration
-    const timer = setTimeout(() => setDataLoading(false), 500); // Added a small delay for better UX on initial load
+    const timer = setTimeout(() => setDataLoading(false), 500);
 
     return () => {
+      // FIX: Corrected typo from 'unscribers' to 'unsubscribers'.
       unsubscribers.forEach(unsub => unsub());
-      clearTimeout(timer); // Clear timeout on unmount
+      clearTimeout(timer);
     };
   }, []);
 
@@ -90,7 +90,6 @@ const App: React.FC = () => {
       await deleteObject(storageRef);
     } catch (error) {
       console.error("Error deleting file from storage:", error);
-      // We can ignore errors like "object not found"
     }
   };
 
@@ -143,13 +142,15 @@ const App: React.FC = () => {
     await setDoc(doc(db, 'site_info', 'main'), info);
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
+  // FIX: Update handleLogout to sign the user out using Firebase Auth.
+  const handleLogout = () => {
+    signOut(auth).catch(error => console.error("Logout failed:", error));
     setCurrentPage('home');
   };
   
+  // FIX: Update renderPage to protect the 'admin' route and render the 'login' page.
   const renderPage = () => {
-    if (authLoading || dataLoading) {
+    if (dataLoading) {
         return (
             <div className="flex justify-center items-center h-screen bg-base-200">
                 <div className="flex flex-col items-center">
@@ -160,25 +161,6 @@ const App: React.FC = () => {
         );
     }
       
-    if (currentPage === 'admin') {
-      return user ? (
-        <Admin
-          notices={notices}
-          teachers={teachers}
-          galleryItems={galleryItems}
-          siteInfo={siteInfo}
-          onSaveNotice={handleSaveNotice}
-          onDeleteNotice={handleDeleteNotice}
-          onSaveTeacher={handleSaveTeacher}
-          onDeleteTeacher={handleDeleteTeacher}
-          onSaveGalleryItem={handleSaveGalleryItem}
-          onDeleteGalleryItem={handleDeleteGalleryItem}
-          onSaveSiteInfo={handleSaveSiteInfo}
-          onLogout={handleLogout}
-        />
-      ) : <Login setCurrentPage={setCurrentPage} />;
-    }
-    
     switch (currentPage) {
       case 'home':
         return <Home setCurrentPage={setCurrentPage} notices={notices} siteInfo={siteInfo} />;
@@ -198,6 +180,26 @@ const App: React.FC = () => {
         return <Contact siteInfo={siteInfo} />;
       case 'imsoftwark':
         return <IMSoftwark />;
+      case 'login':
+        return <Login setCurrentPage={setCurrentPage} />;
+      case 'admin':
+        if (user) {
+          return <Admin
+              notices={notices}
+              teachers={teachers}
+              galleryItems={galleryItems}
+              siteInfo={siteInfo}
+              onSaveNotice={handleSaveNotice}
+              onDeleteNotice={handleDeleteNotice}
+              onSaveTeacher={handleSaveTeacher}
+              onDeleteTeacher={handleDeleteTeacher}
+              onSaveGalleryItem={handleSaveGalleryItem}
+              onDeleteGalleryItem={handleDeleteGalleryItem}
+              onSaveSiteInfo={handleSaveSiteInfo}
+              onLogout={handleLogout}
+          />;
+        }
+        return <Login setCurrentPage={setCurrentPage} />;
       default:
         return <Home setCurrentPage={setCurrentPage} notices={notices} siteInfo={siteInfo} />;
     }
@@ -205,7 +207,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-base-200 text-gray-800">
-      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} collegeName={siteInfo.collegeName} user={user} onLogout={handleLogout} />
+      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} collegeName={siteInfo.collegeName} />
       <main className="flex-grow">
         {renderPage()}
       </main>

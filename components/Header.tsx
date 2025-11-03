@@ -2,17 +2,14 @@ import React, { useState } from 'react';
 import type { Page } from '../types';
 import { NAV_LINKS } from '../constants';
 import { MenuIcon, CloseIcon, ShareIcon } from './Icons';
-import type { User } from 'firebase/auth';
 
 interface HeaderProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
   collegeName: string;
-  user: User | null;
-  onLogout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, collegeName, user, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, collegeName }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, page: Page) => {
@@ -79,16 +76,6 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, collegeNam
                   </a>
                 </li>
               ))}
-               {user && (
-                 <li>
-                    <button
-                        onClick={onLogout}
-                        className="px-3 py-2 rounded-md text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors"
-                    >
-                        লগআউট
-                    </button>
-                 </li>
-               )}
             </ul>
           </nav>
           <div className="md:hidden flex items-center gap-2">
@@ -130,16 +117,6 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, collegeNam
                 </a>
               </li>
             ))}
-             {user && (
-                <li className="mt-2">
-                    <button
-                        onClick={onLogout}
-                        className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-red-500 text-white hover:bg-red-600"
-                    >
-                        লগআউট
-                    </button>
-                </li>
-              )}
           </ul>
         </div>
       )}
