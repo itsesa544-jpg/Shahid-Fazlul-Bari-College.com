@@ -1,5 +1,14 @@
 import type { Notice, Teacher, GalleryItem, NavLink, Department, SiteInfo } from './types';
-import { ComputerIcon, BusinessIcon, WrenchIcon, BoltIcon } from './components/Icons';
+import { 
+    ComputerIcon, 
+    BusinessIcon,
+    OfficeIcon,
+    AccountingIcon,
+    HrIcon,
+    BankingIcon,
+    MarketingIcon,
+    EcommerceIcon,
+} from './components/Icons';
 
 // Simple unique ID generator like nanoid
 const generateId = () => Math.random().toString(36).substring(2, 10);
@@ -21,7 +30,7 @@ export const DEFAULT_SITE_INFO: SiteInfo = {
     principalImageUrl: 'https://picsum.photos/seed/1/200/200',
     aboutUsPreview: "সালে প্রতিষ্ঠিত শহীদ ফজলুল বারী কারিগরি ও বাণিজ্যিক মহাবিদ্যালয় বগুড়া জেলার একটি অন্যতম সেরা কারিগরি ও বাণিজ্যিক শিক্ষা প্রতিষ্ঠান। আমরা শিক্ষার্থীদের মানসম্মত শিক্ষা এবং বাস্তবমুখী প্রশিক্ষণের মাধ্যমে ভবিষ্যতের জন্য প্রস্তুত করি।",
     aboutUsFull: "দাড়িদহ, শিবগঞ্জ, বগুড়া অবস্থিত শহীদ ফজলুল বারী কারিগরি ও বাণিজ্যিক মহাবিদ্যালয় একটি স্বনামধন্য শিক্ষা প্রতিষ্ঠান। ২০০৩ সালে প্রতিষ্ঠিত এই কলেজটি শিক্ষার্থীদের কর্মমুখী ও নৈতিক শিক্ষায় শিক্ষিত করে আসছে।",
-    aboutUsImageUrl: "https://picsum.photos/seed/campus/800/600",
+    aboutUsImageUrl: "https://res.cloudinary.com/dcyzphmz2/image/upload/v1762149828/o0gmsfrcclhezvkdq4ci.png",
     mission: "শিক্ষার্থীদের যুগোপযোগী কারিগরি ও বাণিজ্যিক জ্ঞান প্রদান করে দক্ষ মানবসম্পদ হিসেবে গড়ে তোলা এবং তাদের মধ্যে সততা, নৈতিকতা ও দেশপ্রেম জাগ্রত করা।",
     vision: "দেশের অন্যতম সেরা কারিগরি শিক্ষা প্রতিষ্ঠান হিসেবে পরিচিতি লাভ করা এবং এমন একটি প্রজন্ম তৈরি করা যারা ডিজিটাল বাংলাদেশ গঠনে সক্রিয় ভূমিকা পালন করবে।",
     importantLinks: [
@@ -79,8 +88,52 @@ export const MOCK_GALLERY_ITEMS: GalleryItem[] = [
 ];
 
 export const DEPARTMENTS: Department[] = [
-    {id: 1, name: 'কারিগরি বিভাগ', description: 'দক্ষ মানবসম্পদ গঠনে কারিগরি শিক্ষার বিকল্প নেই।', icon: WrenchIcon},
-    {id: 2, name: 'বাণিজ্য বিভাগ', description: 'বাণিজ্য ও ব্যবসায় প্রশাসনে উন্নত শিক্ষা প্রদান।', icon: BusinessIcon},
-    {id: 3, name: 'কম্পিউটার অপারেশন', description: 'আধুনিক প্রযুক্তির সাথে তাল মিলিয়ে কম্পিউটার চালনায় পারদর্শিতা।', icon: ComputerIcon},
-    {id: 4, name: 'ইলেকট্রিক্যাল টেকনোলজি', description: 'বিদ্যুৎ ও ইলেকট্রনিক্স বিষয়ে হাতে-কলমে প্রশিক্ষণ।', icon: BoltIcon}
+    {
+        id: 1, 
+        name: 'অফিস ব্যবস্থাপনা', 
+        description: 'আধুনিক অফিস পরিচালনা ও ব্যবস্থাপনার কৌশল।', 
+        icon: OfficeIcon
+    },
+    {
+        id: 2, 
+        name: 'হিসাব বিজ্ঞান', 
+        description: 'সঠিক হিসাবরক্ষণ ও আর্থিক ব্যবস্থাপনার জ্ঞান।', 
+        icon: AccountingIcon
+    },
+    {
+        id: 3, 
+        name: 'ব্যবসায় সংগঠন ও ব্যবস্থাপনা', 
+        description: 'একটি সফল ব্যবসা গঠন ও পরিচালনার মূলনীতি।', 
+        icon: BusinessIcon
+    },
+    {
+        id: 4, 
+        name: 'মানব সম্পদ ব্যবস্থাপনা', 
+        description: 'দক্ষ কর্মী পরিচালনা ও প্রাতিষ্ঠানিক উন্নয়ন।', 
+        icon: HrIcon
+    },
+    {
+        id: 5, 
+        name: 'ব্যাংকিং', 
+        description: 'ব্যাংকিং খাতের কার্যক্রম ও আর্থিক পরিষেবা।', 
+        icon: BankingIcon
+    },
+    {
+        id: 6, 
+        name: 'মার্কেটিং', 
+        description: 'পণ্য বা সেবা প্রচার ও গ্রাহক সম্পর্ক স্থাপন।', 
+        icon: MarketingIcon
+    },
+    {
+        id: 7, 
+        name: 'কম্পিউটার অপারেশন', 
+        description: 'আধুনিক প্রযুক্তির সাথে তাল মিলিয়ে কম্পিউটার চালনায় পারদর্শিতা।', 
+        icon: ComputerIcon
+    },
+    {
+        id: 8, 
+        name: 'ই-কমার্স / ডিজিটাল মার্কেটিং', 
+        description: 'অনলাইন ব্যবসা ও ডিজিটাল মাধ্যমে পণ্যের প্রসার।', 
+        icon: EcommerceIcon
+    }
 ];

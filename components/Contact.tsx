@@ -1,42 +1,30 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import type { SiteInfo } from '../types';
-import { db } from '../firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface ContactProps {
   siteInfo: SiteInfo;
 }
 
+// Icon Components
+const LocationPinIcon = ({ className = "w-6 h-6" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+);
+
+const PhoneIcon = ({ className = "w-6 h-6" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+);
+
+const EmailIcon = ({ className = "w-6 h-6" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+);
+
+const ClockIcon = ({ className = "w-6 h-6" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+);
+
+
 const Contact: React.FC<ContactProps> = ({ siteInfo }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus('idle');
-
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      message: formData.get('message') as string,
-      createdAt: serverTimestamp(),
-    };
-
-    try {
-      await addDoc(collection(db, 'messages'), data);
-      setSubmitStatus('success');
-      e.currentTarget.reset();
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="py-16">
       <div className="container mx-auto px-4">
@@ -45,15 +33,39 @@ const Contact: React.FC<ContactProps> = ({ siteInfo }) => {
           
           {/* Contact Info and Map */}
           <div className="space-y-8">
-            <div className="p-6 bg-base-100 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-primary mb-4">আমাদের ঠিকানা</h2>
-                <p className="text-lg text-gray-700">{siteInfo.location}</p>
-                <p className="text-lg text-gray-700 mt-2"><strong>মোবাইল:</strong> {siteInfo.phone}</p>
-                <p className="text-lg text-gray-700"><strong>ইমেইল:</strong> {siteInfo.email}</p>
+            <div className="p-8 bg-base-100 rounded-lg shadow-md">
+              <h2 className="text-2xl font-bold text-primary mb-6">যোগাযোগের তথ্য</h2>
+              <div className="space-y-4">
+                  <div className="flex items-start">
+                      <LocationPinIcon className="w-6 h-6 text-primary mt-1 mr-4 flex-shrink-0" />
+                      <div>
+                          <h3 className="font-semibold text-gray-800">ঠিকানা</h3>
+                          <p className="text-gray-600">{siteInfo.location}</p>
+                      </div>
+                  </div>
+                  <div className="flex items-start">
+                      <PhoneIcon className="w-6 h-6 text-primary mt-1 mr-4 flex-shrink-0" />
+                      <div>
+                          <h3 className="font-semibold text-gray-800">মোবাইল</h3>
+                          <a href={`tel:${siteInfo.phone.replace(/[^\d+]/g, '')}`} className="text-gray-600 hover:text-primary transition-colors">
+                            {siteInfo.phone}
+                          </a>
+                      </div>
+                  </div>
+                  <div className="flex items-start">
+                      <EmailIcon className="w-6 h-6 text-primary mt-1 mr-4 flex-shrink-0" />
+                      <div>
+                          <h3 className="font-semibold text-gray-800">ইমেইল</h3>
+                          <a href={`mailto:${siteInfo.email}`} className="text-primary hover:underline transition-colors">
+                              {siteInfo.email}
+                          </a>
+                      </div>
+                  </div>
+              </div>
             </div>
             <div className="h-96 rounded-lg shadow-md overflow-hidden">
                  <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3618.455209351052!2d89.27318881500397!3d24.91657808402773!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39fc584e03f15555%3A0x67a3362095f3a2c!2sShibganj%2C%20Bogra!5e0!3m2!1sen!2sbd!4v1678886400000" 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3615.155702206497!2d89.28587107590897!3d24.99845767782046!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39fc5c792376b339%3A0xc92496d00465a396!2z4Ka24Ka_4Kay4KeB4KafIOCmh-Cmv-CmsuCnh-Cmn-CmvuCmsOCnh-CmuCDgppbgprLgpp_gpr_gprrgpr_gprrgprgg4KaP4KaoIOCmo-Cmv-Cml-Cnh-Cmn-CmvuCmsiDgprDgpp_gprrgpr_gprrgpr7gprLgpr_gprfgp4fgprY!5e0!3m2!1sbn!2sbd!4v1719914158589!5m2!1sbn!2sbd" 
                     width="100%" 
                     height="100%" 
                     style={{border:0}} 
@@ -65,38 +77,33 @@ const Contact: React.FC<ContactProps> = ({ siteInfo }) => {
             </div>
           </div>
 
-          {/* Contact Form */}
-          <div className="p-8 bg-base-100 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-primary mb-6">আপনার বার্তা পাঠান</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">আপনার নাম</label>
-                <input type="text" id="name" name="name" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" required />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">আপনার ইমেইল</label>
-                <input type="email" id="email" name="email" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" required />
-              </div>
-              <div className="mb-6">
-                <label htmlFor="message" className="block text-gray-700 font-semibold mb-2">আপনার বার্তা</label>
-                <textarea id="message" name="message" rows={5} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" required></textarea>
-              </div>
-              <div>
-                <button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-secondary text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400"
-                  disabled={isSubmitting}
+          {/* Direct Contact Section */}
+          <div className="p-8 bg-base-100 rounded-lg shadow-md flex flex-col justify-center">
+            <h2 className="text-2xl font-bold text-primary mb-8 text-center">সরাসরি যোগাযোগ করুন</h2>
+            <div className="w-full max-w-md mx-auto space-y-6">
+                <a 
+                    href={`mailto:${siteInfo.email}`} 
+                    className="w-full flex items-center justify-center p-4 bg-primary text-white font-bold rounded-lg transition duration-300 transform hover:scale-105 hover:bg-secondary shadow-lg"
                 >
-                  {isSubmitting ? 'পাঠানো হচ্ছে...' : 'বার্তা পাঠান'}
-                </button>
-              </div>
-              {submitStatus === 'success' && (
-                <p className="text-green-600 mt-4 text-center">আপনার বার্তা সফলভাবে পাঠানো হয়েছে। আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।</p>
-              )}
-              {submitStatus === 'error' && (
-                <p className="text-red-600 mt-4 text-center">বার্তা পাঠাতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</p>
-              )}
-            </form>
+                    <EmailIcon className="w-6 h-6 mr-3" />
+                    <span>ইমেইলে যোগাযোগ</span>
+                </a>
+                <a 
+                    href={`tel:${siteInfo.phone.replace(/[^\d+]/g, '')}`}
+                    className="w-full flex items-center justify-center p-4 bg-secondary text-white font-bold rounded-lg transition duration-300 transform hover:scale-105 hover:bg-primary shadow-lg"
+                >
+                    <PhoneIcon className="w-6 h-6 mr-3" />
+                    <span>সরাসরি ফোন করুন</span>
+                </a>
+            </div>
+            <div className="mt-10 text-center text-gray-600 border-t border-gray-200 pt-6 w-full max-w-md mx-auto">
+                <div className="flex items-center justify-center mb-2">
+                    <ClockIcon className="w-6 h-6 mr-2 text-primary" />
+                    <h3 className="font-semibold text-lg text-gray-800">অফিস সময়</h3>
+                </div>
+                <p>শনিবার - বৃহস্পতিবার</p>
+                <p>সকাল ৯:০০ টা - বিকাল ৪:০০ টা</p>
+            </div>
           </div>
         </div>
       </div>

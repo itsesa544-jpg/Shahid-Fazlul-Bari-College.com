@@ -4,7 +4,7 @@ import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2ntCggFFRFQrf87MlAk6TKQguapre12U",
+  apiKey: process.env.API_KEY, // Changed to use AISTudio's provided environment variable
   authDomain: "myawesom-d8265.firebaseapp.com",
   projectId: "myawesom-d8265",
   storageBucket: "myawesom-d8265.appspot.com",

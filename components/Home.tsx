@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Page, Notice, SiteInfo } from '../types';
-import { ChevronRightIcon, DownloadIcon } from './Icons';
+import { ChevronRightIcon, DownloadIcon, ShareIcon, CopyIcon } from './Icons';
 
 interface HomeProps {
     setCurrentPage: (page: Page) => void;
@@ -21,11 +21,11 @@ const HeroSection: React.FC<{setCurrentPage: (page: Page) => void; collegeName: 
   </div>
 );
 
-const AboutPreview: React.FC<{setCurrentPage: (page: Page) => void; established: string; collegeName: string; aboutUsPreview: string;}> = ({setCurrentPage, established, collegeName, aboutUsPreview}) => (
+const AboutPreview: React.FC<{setCurrentPage: (page: Page) => void; established: string; collegeName: string; aboutUsPreview: string; aboutUsImageUrl: string;}> = ({setCurrentPage, established, collegeName, aboutUsPreview, aboutUsImageUrl}) => (
     <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-                <img src="https://picsum.photos/seed/about/800/600" alt="কলেজ ভবন" className="rounded-lg shadow-xl" />
+                <img src={aboutUsImageUrl} alt="কলেজ ভবন" className="rounded-lg shadow-xl" />
             </div>
             <div>
                 <h2 className="text-3xl font-bold text-primary mb-4">আমাদের সম্পর্কে</h2>
@@ -87,14 +87,91 @@ const NoticePreview: React.FC<{setCurrentPage: (page: Page) => void; notices: No
     </div>
 );
 
+const ShareSection: React.FC<{ collegeName: string }> = ({ collegeName }) => {
+    const [copyButtonText, setCopyButtonText] = useState('লিঙ্ক কপি করুন');
+    const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(pageUrl);
+            setCopyButtonText('কপি হয়েছে!');
+            setTimeout(() => setCopyButtonText('লিঙ্ক কপি করুন'), 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            alert('লিঙ্ক কপি করতে ব্যর্থ হয়েছে।');
+        }
+    };
+    
+    const handleShare = async () => {
+        const shareData = {
+          title: document.title,
+          text: `শহীদ ফজলুল বারী কারিগরি ও বাণিজ্যিক মহাবিদ্যালয় - ${collegeName}`,
+          url: pageUrl,
+        };
+
+        try {
+          if (navigator.share) {
+            await navigator.share(shareData);
+          } else {
+            // Fallback to copy. The handleCopy function provides visual user feedback.
+            handleCopy();
+          }
+        } catch (err) {
+          // Don't show an error if the user cancels the share dialog
+          if (!(err instanceof DOMException && err.name === 'AbortError')) {
+              console.error('Error sharing:', err);
+          }
+        }
+    };
+
+    return (
+        <div className="bg-base-200 py-16">
+            <div className="container mx-auto px-4">
+                <div className="max-w-3xl mx-auto bg-base-100 rounded-lg shadow-lg p-8 text-center">
+                    <h2 className="text-3xl font-bold text-primary mb-4">ওয়েবসাইটটি শেয়ার করুন</h2>
+                    <p className="text-gray-600 mb-6">
+                        আমাদের কলেজের তথ্য আপনার বন্ধু ও পরিচিতদের সাথে শেয়ার করে অন্যদের জানতে সাহায্য করুন।
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <input
+                            type="text"
+                            value={pageUrl}
+                            readOnly
+                            className="w-full sm:w-auto flex-grow bg-base-200 text-gray-700 border border-gray-300 rounded-md px-4 py-2 text-center sm:text-left focus:outline-none focus:ring-2 focus:ring-primary"
+                            onClick={(e) => (e.target as HTMLInputElement).select()}
+                        />
+                         <button 
+                            onClick={handleCopy} 
+                            className="flex items-center justify-center gap-2 w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 whitespace-nowrap"
+                        >
+                            <CopyIcon className="w-5 h-5"/>
+                            <span>{copyButtonText}</span>
+                        </button>
+                    </div>
+                    <div className="mt-6">
+                         <button 
+                            onClick={handleShare}
+                            className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-secondary text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105"
+                        >
+                            <ShareIcon className="w-6 h-6" />
+                            <span>এখনই শেয়ার করুন</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const Home: React.FC<HomeProps> = ({setCurrentPage, notices, siteInfo}) => {
   return (
     <>
       <HeroSection setCurrentPage={setCurrentPage} collegeName={siteInfo.collegeName} slogan={siteInfo.slogan} heroImageUrl={siteInfo.heroImageUrl} />
-      <AboutPreview setCurrentPage={setCurrentPage} established={siteInfo.established} collegeName={siteInfo.collegeName} aboutUsPreview={siteInfo.aboutUsPreview} />
+      <AboutPreview setCurrentPage={setCurrentPage} established={siteInfo.established} collegeName={siteInfo.collegeName} aboutUsPreview={siteInfo.aboutUsPreview} aboutUsImageUrl={siteInfo.aboutUsImageUrl} />
       <PrincipalMessage message={siteInfo.principalMessage} name={siteInfo.principalName} designation={siteInfo.principalDesignation} imageUrl={siteInfo.principalImageUrl} />
       <NoticePreview setCurrentPage={setCurrentPage} notices={notices} />
+      <ShareSection collegeName={siteInfo.collegeName} />
     </>
   );
 };

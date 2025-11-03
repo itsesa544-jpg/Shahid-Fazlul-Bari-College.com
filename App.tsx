@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -13,7 +14,7 @@ import Admin from './components/Admin';
 import Login from './components/Login';
 import IMSoftwark from './components/IMSoftwark';
 import type { Page, Notice, Teacher, GalleryItem, SiteInfo } from './types';
-import { DEFAULT_SITE_INFO } from './constants';
+import { DEFAULT_SITE_INFO, MOCK_NOTICES, MOCK_TEACHERS, MOCK_GALLERY_ITEMS } from './constants';
 import { db, auth, storage } from './firebaseConfig';
 import { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, orderBy, query } from 'firebase/firestore';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
@@ -46,15 +47,15 @@ const App: React.FC = () => {
     const unsubscribers = [
       onSnapshot(query(collection(db, 'notices'), orderBy('date', 'desc')), (snapshot) => {
         const noticesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
-        setNotices(noticesData);
+        setNotices(noticesData.length > 0 ? noticesData : MOCK_NOTICES);
       }),
       onSnapshot(collection(db, 'teachers'), (snapshot) => {
         const teachersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher));
-        setTeachers(teachersData);
+        setTeachers(teachersData.length > 0 ? teachersData : MOCK_TEACHERS);
       }),
       onSnapshot(collection(db, 'galleryItems'), (snapshot) => {
         const galleryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryItem));
-        setGalleryItems(galleryData);
+        setGalleryItems(galleryData.length > 0 ? galleryData : MOCK_GALLERY_ITEMS);
       }),
       onSnapshot(doc(db, 'site_info', 'main'), (doc) => {
         if (doc.exists()) {
@@ -67,9 +68,13 @@ const App: React.FC = () => {
       })
     ];
     
-    Promise.all([/* You can add initial fetch promises here if needed */]).finally(() => setDataLoading(false));
+    // Simulate initial data fetch completion after a short delay for demonstration
+    const timer = setTimeout(() => setDataLoading(false), 500); // Added a small delay for better UX on initial load
 
-    return () => unsubscribers.forEach(unsub => unsub());
+    return () => {
+      unsubscribers.forEach(unsub => unsub());
+      clearTimeout(timer); // Clear timeout on unmount
+    };
   }, []);
 
 
@@ -145,7 +150,14 @@ const App: React.FC = () => {
   
   const renderPage = () => {
     if (authLoading || dataLoading) {
-        return <div className="flex justify-center items-center h-screen"><div className="text-xl font-semibold">লোড হচ্ছে...</div></div>;
+        return (
+            <div className="flex justify-center items-center h-screen bg-base-200">
+                <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
+                    <p className="text-xl font-semibold text-gray-700 mt-4">লোড হচ্ছে...</p>
+                </div>
+            </div>
+        );
     }
       
     if (currentPage === 'admin') {

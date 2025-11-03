@@ -39,11 +39,13 @@ const ImageUploadField: React.FC<{
 }> = ({ label, name, value, onChange, folder }) => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const fileInputId = `${name}-file-upload`; // Unique ID for file input
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploading(true);
+      setProgress(0);
       const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -55,47 +57,73 @@ const ImageUploadField: React.FC<{
         (error) => {
           console.error("Upload failed:", error);
           setUploading(false);
+          alert('ফাইল আপলোড ব্যর্থ হয়েছে।');
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             onChange(name, downloadURL);
             setUploading(false);
-            setProgress(0);
           });
         }
       );
     }
   };
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(name, e.target.value);
+  };
+
   return (
     <div>
       <label className="block text-gray-700 font-semibold mb-1">{label}</label>
-      <div className="mt-1 flex items-center gap-4 p-3 border border-dashed rounded-lg">
-        {value && <img src={value} alt="Preview" className="w-24 h-24 object-cover rounded-lg border bg-base-100" />}
-        <div className="flex flex-col">
-          <label htmlFor={name} className={`cursor-pointer bg-primary text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors text-sm font-semibold ${uploading ? 'opacity-50' : ''}`}>
-            {uploading ? 'আপলোড হচ্ছে...' : 'ছবি পরিবর্তন করুন'}
-          </label>
-          <input
-            type="file"
-            id={name}
-            name={name}
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            disabled={uploading}
-          />
-           <p className="text-xs text-gray-500 mt-2">নতুন ছবি আপলোড করতে বাটনে ক্লিক করুন।</p>
-           {uploading && (
-             <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+      <div className="mt-1 flex flex-col gap-4 p-4 bg-gray-50 border-2 border-dashed rounded-lg">
+        {value && (
+          <div className="flex justify-center bg-gray-100 p-2 rounded">
+            <img src={value} alt="Preview" className="max-w-full h-auto max-h-48 object-contain rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+          {/* File Upload Part */}
+          <div className="flex flex-col items-center">
+            <label htmlFor={fileInputId} className={`w-full text-center cursor-pointer bg-primary text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors font-semibold ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              {uploading ? `আপলোড হচ্ছে...` : 'ফাইল থেকে আপলোড'}
+            </label>
+            <input
+              type="file"
+              id={fileInputId}
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              disabled={uploading}
+            />
+            {uploading && (
+              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
                 <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
-             </div>
-           )}
+              </div>
+            )}
+          </div>
+
+          <div className="text-center text-gray-500 font-semibold hidden md:block">অথবা</div>
+          
+          <hr className="md:hidden" />
+
+          {/* URL Input Part */}
+          <div className="w-full md:col-span-2">
+            <input
+              type="url"
+              placeholder="ছবির লিংক এখানে পেস্ট করুন"
+              value={value || ''}
+              onChange={handleUrlChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
+              disabled={uploading}
+            />
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
 
 
 // Component to edit general site content
