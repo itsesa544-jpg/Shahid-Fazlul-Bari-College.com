@@ -1,6 +1,6 @@
 import type React from 'react';
 
-export type Page = 'home' | 'about' | 'departments' | 'admission' | 'notices' | 'gallery' | 'teachers' | 'contact' | 'admin' | 'login' | 'imsoftwark';
+export type Page = 'home' | 'about' | 'departments' | 'admission' | 'notices' | 'gallery' | 'teachers' | 'contact' | 'admin' | 'imsoftwark' | 'result' | 'videos' | 'digital-content' | 'gallery-item' | 'class-routine';
 
 export interface NavLink {
     id: Page;
@@ -12,6 +12,8 @@ export interface Notice {
   title: string;
   date: string;
   link: string;
+  type: 'file' | 'link';
+  fileName?: string;
 }
 
 export interface Teacher {
@@ -19,6 +21,7 @@ export interface Teacher {
   name: string;
   designation: string;
   imageUrl: string;
+  details: string;
 }
 
 export interface GalleryItem {
@@ -26,6 +29,9 @@ export interface GalleryItem {
   category: string;
   imageUrl: string;
   alt: string;
+  title: string;
+  description: string;
+  year: number;
 }
 
 export interface Department {

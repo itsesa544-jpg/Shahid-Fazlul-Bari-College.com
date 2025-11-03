@@ -1,8 +1,8 @@
 import { initializeApp } from 'firebase/app';
-// FIX: Import getAuth from firebase/auth
-import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+// FIX: Import getAuth to enable Firebase Authentication.
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.API_KEY, // Changed to use AISTudio's provided environment variable
@@ -21,5 +21,5 @@ const app = initializeApp(firebaseConfig);
 // Export Firebase services
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-// FIX: Initialize and export Firebase Auth
+// FIX: Export the auth service.
 export const auth = getAuth(app);

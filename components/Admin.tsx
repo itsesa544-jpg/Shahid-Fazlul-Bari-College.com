@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import type { Notice, Teacher, GalleryItem, SiteInfo, ImportantLink, SocialLink } from '../types';
 import { storage } from '../firebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { GALLERY_CATEGORIES } from '../constants';
 
 interface AdminProps {
   notices: Notice[];
   teachers: Teacher[];
   galleryItems: GalleryItem[];
   siteInfo: SiteInfo;
+  results: Notice[];
+  routines: Notice[];
+  digitalContents: Notice[];
   onSaveNotice: (notice: Partial<Notice>) => void;
   onDeleteNotice: (id: string) => void;
   onSaveTeacher: (teacher: Partial<Teacher>) => void;
@@ -15,11 +19,17 @@ interface AdminProps {
   onSaveGalleryItem: (item: Partial<GalleryItem>) => void;
   onDeleteGalleryItem: (id: string) => void;
   onSaveSiteInfo: (info: SiteInfo) => void;
+  onSaveResult: (result: Partial<Notice>) => void;
+  onDeleteResult: (id: string) => void;
+  onSaveRoutine: (routine: Partial<Notice>) => void;
+  onDeleteRoutine: (id: string) => void;
+  onSaveDigitalContent: (content: Partial<Notice>) => void;
+  onDeleteDigitalContent: (id: string) => void;
   onLogout: () => void;
 }
 
 // A reusable form field component
-const FormField: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void, type?: string, required?: boolean, isTextArea?: boolean}> = ({label, name, value, onChange, type='text', required=true, isTextArea=false}) => (
+const FormField: React.FC<{label: string, name: string, value: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void, type?: string, required?: boolean, isTextArea?: boolean}> = ({label, name, value, onChange, type='text', required=true, isTextArea=false}) => (
     <div>
         <label htmlFor={name} className="block text-gray-700 font-semibold mb-1">{label}</label>
         {isTextArea ? (
@@ -124,6 +134,78 @@ const ImageUploadField: React.FC<{
   );
 };
 
+const FileUploadField: React.FC<{
+  label: string;
+  onUploadComplete: (url: string, fileName: string) => void;
+  folder: string;
+  currentFileName?: string;
+}> = ({ label, onUploadComplete, folder, currentFileName }) => {
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [fileName, setFileName] = useState(currentFileName || '');
+  const fileInputId = `file-upload-${folder}`;
+
+  useEffect(() => {
+    setFileName(currentFileName || '');
+  }, [currentFileName]);
+  
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploading(true);
+      setProgress(0);
+      setFileName(file.name);
+      const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setProgress(prog);
+        },
+        (error) => {
+          console.error("Upload failed:", error);
+          setUploading(false);
+          alert('ফাইল আপলোড ব্যর্থ হয়েছে।');
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            onUploadComplete(downloadURL, file.name);
+            setUploading(false);
+          });
+        }
+      );
+    }
+  };
+  
+  return (
+    <div>
+      <label className="block text-gray-700 font-semibold mb-1">{label}</label>
+      <div className="mt-1 flex flex-col gap-4 p-4 bg-gray-50 border-2 border-dashed rounded-lg">
+        {fileName && !uploading && <div className="text-gray-700 font-medium text-center bg-gray-200 p-2 rounded">বর্তমান ফাইল: {fileName}</div>}
+        <div className="flex flex-col items-center">
+          <label htmlFor={fileInputId} className={`w-full text-center cursor-pointer bg-primary text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors font-semibold ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {uploading ? `আপলোড হচ্ছে... ${progress.toFixed(0)}%` : 'নতুন ফাইল আপলোড করুন'}
+          </label>
+          <input
+            type="file"
+            id={fileInputId}
+            accept="application/pdf,image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={uploading}
+          />
+          {uploading && (
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+              <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 
 // Component to edit general site content
@@ -313,37 +395,83 @@ const EditPrincipalMessage: React.FC<{ info: SiteInfo, onSave: (info: SiteInfo) 
 };
 
 
-// Sub-component for managing notices
-const ManageNotices: React.FC<{notices: Notice[], onSave: (notice: Partial<Notice>) => void, onDelete: (id: string) => void}> = ({ notices, onSave, onDelete }) => {
+// Generic component for managing notice-like items
+const ManageContent: React.FC<{
+  title: string;
+  items: Notice[];
+  onSave: (item: Partial<Notice>) => void;
+  onDelete: (id: string) => void;
+  folder: string;
+  newItemLabel: string;
+}> = ({ title, items, onSave, onDelete, folder, newItemLabel }) => {
     const [editItem, setEditItem] = useState<Partial<Notice> | null>(null);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEditItem({ ...editItem, [e.target.name]: e.target.value });
+    };
+    
+    const handleTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const type = e.target.value as 'file' | 'link';
+        const updatedItem = { ...editItem, type };
+        if (type === 'link') {
+            updatedItem.fileName = '';
+        }
+        setEditItem(updatedItem);
+    };
+
+    const handleFileUpload = (url: string, fileName: string) => {
+        setEditItem({ ...editItem, link: url, fileName: fileName });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (editItem && editItem.title && editItem.date) {
+        if (editItem && editItem.title && editItem.date && editItem.link) {
             onSave(editItem);
             setEditItem(null);
+        } else {
+            alert('অনুগ্রহ করে সকল তথ্য পূরণ করুন।');
         }
     };
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-2xl font-bold text-primary">নোটিশ বোর্ড ম্যানেজ করুন</h2>
-                 <button onClick={() => setEditItem({title: '', date: new Date().toISOString().split('T')[0], link: '#'})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ নতুন নোটিশ</button>
+                 <h2 className="text-2xl font-bold text-primary">{title}</h2>
+                 <button onClick={() => setEditItem({title: '', date: new Date().toISOString().split('T')[0], link: '#', type: 'file', fileName: ''})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ {newItemLabel}</button>
             </div>
             
             {editItem && (
-                <form onSubmit={handleSubmit} className="mb-8 p-4 bg-base-100 rounded-lg shadow">
-                    <h3 className="text-xl font-bold mb-4 text-primary">{editItem.id ? 'নোটিশ সম্পাদনা করুন' : 'নতুন নোটিশ'}</h3>
-                    <div className="mb-4">
-                        <label className="block font-semibold text-gray-700">শিরোনাম</label>
-                        <input type="text" value={editItem.title} onChange={e => setEditItem({...editItem, title: e.target.value})} className="w-full p-2 border rounded border-gray-300 focus:ring-primary focus:border-primary" required />
+                <form onSubmit={handleSubmit} className="mb-8 p-4 bg-base-100 rounded-lg shadow space-y-4">
+                    <h3 className="text-xl font-bold mb-4 text-primary">{editItem.id ? 'সম্পাদনা করুন' : newItemLabel}</h3>
+                    <FormField label="শিরোনাম" name="title" value={editItem.title || ''} onChange={handleInputChange} />
+                    <FormField label="তারিখ" name="date" type="date" value={editItem.date?.split('T')[0] || ''} onChange={handleInputChange} />
+                    
+                    <div>
+                        <label className="block font-semibold text-gray-700 mb-2">ধরণ</label>
+                        <div className="flex gap-x-6">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="type" value="file" checked={editItem.type === 'file'} onChange={handleTypeChange} className="form-radio h-5 w-5 text-primary focus:ring-primary" />
+                                <span>ফাইল আপলোড (PDF/Image)</span>
+                            </label>
+                             <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="type" value="link" checked={editItem.type === 'link'} onChange={handleTypeChange} className="form-radio h-5 w-5 text-primary focus:ring-primary" />
+                                <span>বহিরাগত লিঙ্ক</span>
+                            </label>
+                        </div>
                     </div>
-                    <div className="mb-4">
-                        <label className="block font-semibold text-gray-700">তারিখ</label>
-                        <input type="date" value={editItem.date?.split('T')[0]} onChange={e => setEditItem({...editItem, date: e.target.value})} className="w-full p-2 border rounded border-gray-300 focus:ring-primary focus:border-primary" required />
-                    </div>
-                    <div className="flex gap-2">
+
+                    {editItem.type === 'file' ? (
+                        <FileUploadField 
+                            label="ফাইল আপলোড করুন" 
+                            onUploadComplete={handleFileUpload} 
+                            folder={folder} 
+                            currentFileName={editItem.fileName} 
+                        />
+                    ) : (
+                        <FormField label="লিঙ্ক URL" name="link" value={editItem.link || ''} onChange={handleInputChange} type="url"/>
+                    )}
+
+                    <div className="flex gap-2 pt-2">
                         <button type="submit" className="bg-secondary text-white px-4 py-2 rounded hover:bg-primary transition-colors">সংরক্ষণ করুন</button>
                         <button type="button" onClick={() => setEditItem(null)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition-colors">বাতিল করুন</button>
                     </div>
@@ -351,15 +479,15 @@ const ManageNotices: React.FC<{notices: Notice[], onSave: (notice: Partial<Notic
             )}
 
             <div className="space-y-2">
-                {notices.map(notice => (
-                    <div key={notice.id} className="flex justify-between items-center p-3 bg-base-100 rounded">
+                {items.map(item => (
+                    <div key={item.id} className="flex justify-between items-center p-3 bg-base-100 rounded">
                         <div>
-                            <p className="font-semibold">{notice.title}</p>
-                            <p className="text-sm text-gray-500">{notice.date}</p>
+                            <p className="font-semibold">{item.title}</p>
+                            <p className="text-sm text-gray-500">{item.date}</p>
                         </div>
                         <div className="flex gap-2 flex-shrink-0 ml-4">
-                            <button onClick={() => setEditItem(notice)} className="text-blue-600 hover:underline">সম্পাদনা</button>
-                            <button onClick={() => window.confirm('এই নোটিশটি মুছে ফেলতে আপনি কি নিশ্চিত?') && onDelete(notice.id)} className="text-red-600 hover:underline">মুছে ফেলুন</button>
+                            <button onClick={() => setEditItem(item)} className="text-blue-600 hover:underline">সম্পাদনা</button>
+                            <button onClick={() => window.confirm('এই আইটেমটি মুছে ফেলতে আপনি কি নিশ্চিত?') && onDelete(item.id)} className="text-red-600 hover:underline">মুছে ফেলুন</button>
                         </div>
                     </div>
                 ))}
@@ -372,7 +500,7 @@ const ManageNotices: React.FC<{notices: Notice[], onSave: (notice: Partial<Notic
 const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<Teacher>) => void, onDelete: (id: string) => void}> = ({ teachers, onSave, onDelete }) => {
     const [editItem, setEditItem] = useState<Partial<Teacher> | null>(null);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setEditItem({ ...editItem, [e.target.name]: e.target.value });
     };
 
@@ -382,9 +510,11 @@ const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<T
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (editItem && editItem.name && editItem.designation && editItem.imageUrl) {
+        if (editItem && editItem.name && editItem.designation && editItem.imageUrl && editItem.details) {
             onSave(editItem);
             setEditItem(null);
+        } else {
+             alert('অনুগ্রহ করে সকল তথ্য পূরণ করুন।');
         }
     };
     
@@ -392,7 +522,7 @@ const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<T
        <div>
             <div className="flex justify-between items-center mb-6">
                  <h2 className="text-2xl font-bold text-primary">শিক্ষক মণ্ডলী ম্যানেজ করুন</h2>
-                 <button onClick={() => setEditItem({name: '', designation: '', imageUrl: ''})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ নতুন শিক্ষক</button>
+                 <button onClick={() => setEditItem({name: '', designation: '', imageUrl: '', details: ''})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ নতুন শিক্ষক</button>
             </div>
              
              {editItem && (
@@ -400,6 +530,19 @@ const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<T
                      <h3 className="text-xl font-bold mb-4 text-primary">{editItem.id ? 'শিক্ষকের তথ্য সম্পাদনা করুন' : 'নতুন শিক্ষক'}</h3>
                     <FormField label="নাম" name="name" value={editItem.name || ''} onChange={handleInputChange} />
                     <FormField label="পদবী" name="designation" value={editItem.designation || ''} onChange={handleInputChange} />
+                    <div>
+                        <label htmlFor="details" className="block text-gray-700 font-semibold mb-1">বিস্তারিত তথ্য</label>
+                        <textarea
+                            id="details"
+                            name="details"
+                            value={editItem.details || ''}
+                            onChange={handleInputChange}
+                            rows={8}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
+                            placeholder={`শিক্ষকের বিস্তারিত তথ্য লিখুন। যেমন:\n\nশিক্ষাগত যোগ্যতা:\n- স্নাতক (Honours) এবং স্নাতকোত্তর (Master’s) ডিগ্রি।\n- B.Ed (Bachelor of Education) ডিগ্রি।\n\nঅতিরিক্ত গুণাবলি:\n- ভালো বক্তৃতা ও বোঝানোর দক্ষতা।\n- ধৈর্য, নৈতিকতা ও নেতৃত্বগুণ।`}
+                            required
+                        ></textarea>
+                    </div>
                     <ImageUploadField label="শিক্ষকের ছবি" name="imageUrl" value={editItem.imageUrl || ''} onChange={handleImageUpload} folder="teachers"/>
                     <div className="flex gap-2 pt-2">
                         <button type="submit" className="bg-secondary text-white px-4 py-2 rounded hover:bg-primary transition-colors">সংরক্ষণ করুন</button>
@@ -427,9 +570,30 @@ const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<T
 // Sub-component for managing gallery
 const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<GalleryItem>) => void, onDelete: (id: string) => void}> = ({ items, onSave, onDelete }) => {
     const [editItem, setEditItem] = useState<Partial<GalleryItem> | null>(null);
+    const [charCount, setCharCount] = useState({ title: 0, description: 0 });
     
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditItem({ ...editItem, [e.target.name]: e.target.value });
+    useEffect(() => {
+        if (editItem) {
+            setCharCount({
+                title: editItem.title?.length || 0,
+                description: editItem.description?.length || 0,
+            });
+        }
+    }, [editItem]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        
+        let processedValue: string | number = value;
+        if (name === 'year') {
+            processedValue = value ? parseInt(value, 10) : new Date().getFullYear();
+        }
+
+        setEditItem({ ...editItem, [name]: processedValue });
+
+        if (name === 'title' || name === 'description') {
+             setCharCount(prev => ({ ...prev, [name]: value.length }));
+        }
     };
 
     const handleImageUpload = (name: string, value: string) => {
@@ -438,9 +602,11 @@ const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<Gall
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (editItem && editItem.category && editItem.imageUrl && editItem.alt) {
+        if (editItem && editItem.category && editItem.imageUrl && editItem.alt && editItem.title && editItem.description && editItem.year) {
             onSave(editItem);
             setEditItem(null);
+        } else {
+            alert('অনুগ্রহ করে সকল তথ্য পূরণ করুন।');
         }
     };
     
@@ -448,14 +614,62 @@ const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<Gall
         <div>
             <div className="flex justify-between items-center mb-6">
                  <h2 className="text-2xl font-bold text-primary">ছবির গ্যালারি ম্যানেজ করুন</h2>
-                 <button onClick={() => setEditItem({category: '', imageUrl: '', alt: ''})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ নতুন ছবি</button>
+                 <button onClick={() => setEditItem({category: GALLERY_CATEGORIES[0].subcategories[0], imageUrl: '', alt: '', title: '', description: '', year: new Date().getFullYear()})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ নতুন ছবি</button>
             </div>
             
              {editItem && (
                 <form onSubmit={handleSubmit} className="mb-8 p-4 bg-base-100 rounded-lg shadow space-y-4">
                      <h3 className="text-xl font-bold mb-4 text-primary">{editItem.id ? 'ছবির তথ্য সম্পাদনা করুন' : 'নতুন ছবি'}</h3>
-                    <FormField label="বিভাগ" name="category" value={editItem.category || ''} onChange={handleInputChange} />
-                    <FormField label="বিকল্প লেখা (Alt Text)" name="alt" value={editItem.alt || ''} onChange={handleInputChange} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label htmlFor="category" className="block text-gray-700 font-semibold mb-1">বিভাগ</label>
+                            <select 
+                                id="category"
+                                name="category" 
+                                value={editItem.category || ''} 
+                                onChange={handleInputChange} 
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-primary focus:border-primary"
+                                required
+                            >
+                                <option value="" disabled>-- একটি বিভাগ নির্বাচন করুন --</option>
+                                {GALLERY_CATEGORIES.map(group => (
+                                    <optgroup key={group.heading} label={group.heading}>
+                                        {group.subcategories.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                                    </optgroup>
+                                ))}
+                            </select>
+                        </div>
+                        <FormField label="সাল" name="year" type="number" value={editItem.year || new Date().getFullYear()} onChange={handleInputChange} />
+                    </div>
+                    <div>
+                        <label htmlFor="title" className="block text-gray-700 font-semibold mb-1">শিরোনাম</label>
+                        <input 
+                            type="text" 
+                            id="title" 
+                            name="title" 
+                            value={editItem.title || ''} 
+                            onChange={handleInputChange} 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                            required 
+                            maxLength={60}
+                        />
+                        <small className="text-gray-500">{charCount.title}/60 অক্ষর</small>
+                    </div>
+                    <div>
+                        <label htmlFor="description" className="block text-gray-700 font-semibold mb-1">বিবরণ</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            value={editItem.description || ''} 
+                            onChange={handleInputChange} 
+                            rows={3} 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                            required 
+                            maxLength={200}
+                        />
+                        <small className="text-gray-500">{charCount.description}/200 অক্ষর</small>
+                    </div>
+                    <FormField label="বিকল্প লেখা (Alt Text for accessibility)" name="alt" value={editItem.alt || ''} onChange={handleInputChange} />
                     <ImageUploadField label="ছবি আপলোড করুন" name="imageUrl" value={editItem.imageUrl || ''} onChange={handleImageUpload} folder="gallery" />
                     <div className="flex gap-2 pt-2">
                         <button type="submit" className="bg-secondary text-white px-4 py-2 rounded hover:bg-primary transition-colors">সংরক্ষণ করুন</button>
@@ -466,11 +680,13 @@ const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<Gall
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {items.map(item => (
-                    <div key={item.id} className="relative group p-2 bg-base-100 rounded shadow">
-                        <img src={item.imageUrl} alt={item.alt} className="w-full h-40 object-cover rounded" />
+                    <div key={item.id} className="relative group p-2 bg-base-100 rounded shadow text-center">
+                        <img src={item.imageUrl} alt={item.alt} className="w-full h-40 object-cover rounded mb-2" />
+                        <p className="font-semibold text-sm truncate" title={item.title}>{item.title}</p>
+                        <p className="text-xs text-gray-500">{item.category} - {item.year}</p>
                         <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button onClick={() => setEditItem(item)} className="bg-white/80 text-blue-600 rounded-full px-2 py-1 text-xs leading-none shadow">Edit</button>
-                             <button onClick={() => window.confirm('এই ছবিটি মুছে ফেলতে আপনি কি নিশ্চিত?') && onDelete(item.id)} className="bg-white/80 text-red-600 rounded-full px-2 py-1 text-xs leading-none shadow">Del</button>
+                             <button onClick={() => setEditItem(item)} className="bg-white/80 text-blue-600 rounded-full px-2 py-1 text-xs leading-none shadow">সম্পাদনা</button>
+                             <button onClick={() => window.confirm('এই ছবিটি মুছে ফেলতে আপনি কি নিশ্চিত?') && onDelete(item.id)} className="bg-white/80 text-red-600 rounded-full px-2 py-1 text-xs leading-none shadow">মুছুন</button>
                         </div>
                     </div>
                 ))}
@@ -482,22 +698,29 @@ const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<Gall
 // Main Admin Dashboard Component
 const Admin: React.FC<AdminProps> = (props) => {
     const { 
-        notices, teachers, galleryItems, siteInfo,
+        notices, teachers, galleryItems, siteInfo, results, routines, digitalContents,
         onSaveNotice, onDeleteNotice, 
         onSaveTeacher, onDeleteTeacher, 
         onSaveGalleryItem, onDeleteGalleryItem,
-        onSaveSiteInfo, onLogout
+        onSaveSiteInfo,
+        onSaveResult, onDeleteResult,
+        onSaveRoutine, onDeleteRoutine,
+        onSaveDigitalContent, onDeleteDigitalContent,
+        onLogout
     } = props;
     
-    type AdminView = 'siteInfo' | 'principal' | 'notices' | 'teachers' | 'gallery';
-    const [activeView, setActiveView] = useState<AdminView>('siteInfo');
+    type AdminView = 'siteInfo' | 'principal' | 'notices' | 'teachers' | 'gallery' | 'results' | 'routines' | 'digital-content';
+    const [activeView, setActiveView] = useState<AdminView>('notices');
 
     const sidebarLinks = [
-        { id: 'siteInfo', label: 'সাধারণ তথ্য' },
-        { id: 'principal', label: 'অধ্যক্ষের বাণী' },
         { id: 'notices', label: 'নোটিশ বোর্ড' },
+        { id: 'results', label: 'ফলাফল' },
+        { id: 'routines', label: 'ক্লাস রুটিন' },
+        { id: 'digital-content', label: 'ডিজিটাল কনটেন্ট' },
         { id: 'teachers', label: 'শিক্ষক মণ্ডলী' },
         { id: 'gallery', label: 'ছবির গ্যালারি' },
+        { id: 'siteInfo', label: 'সাধারণ তথ্য' },
+        { id: 'principal', label: 'অধ্যক্ষের বাণী' },
     ];
 
     const renderContent = () => {
@@ -507,7 +730,13 @@ const Admin: React.FC<AdminProps> = (props) => {
             case 'principal':
                 return <EditPrincipalMessage info={siteInfo} onSave={onSaveSiteInfo} />;
             case 'notices':
-                return <ManageNotices notices={notices} onSave={onSaveNotice} onDelete={onDeleteNotice} />;
+                return <ManageContent title="নোটিশ বোর্ড ম্যানেজ করুন" items={notices} onSave={onSaveNotice} onDelete={onDeleteNotice} folder="notices" newItemLabel="নতুন নোটিশ" />;
+            case 'results':
+                return <ManageContent title="ফলাফল ম্যানেজ করুন" items={results} onSave={onSaveResult} onDelete={onDeleteResult} folder="results" newItemLabel="নতুন ফলাফল" />;
+            case 'routines':
+                return <ManageContent title="ক্লাস রুটিন ম্যানেজ করুন" items={routines} onSave={onSaveRoutine} onDelete={onDeleteRoutine} folder="routines" newItemLabel="নতুন রুটিন" />;
+            case 'digital-content':
+                return <ManageContent title="ডিজিটাল কনটেন্ট ম্যানেজ করুন" items={digitalContents} onSave={onSaveDigitalContent} onDelete={onDeleteDigitalContent} folder="digital_content" newItemLabel="নতুন কনটেন্ট" />;
             case 'teachers':
                 return <ManageTeachers teachers={teachers} onSave={onSaveTeacher} onDelete={onDeleteTeacher} />;
             case 'gallery':

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import type { Page, Notice, SiteInfo } from '../types';
-import { ChevronRightIcon, DownloadIcon, ShareIcon, CopyIcon, ResultIcon, RoutineIcon, DigitalContentIcon } from './Icons';
+import { ChevronRightIcon, DownloadIcon, SendIcon, CopyIcon, ResultIcon, RoutineIcon, DigitalContentIcon, ExternalLinkIcon } from './Icons';
 
 interface HomeProps {
     setCurrentPage: (page: Page) => void;
@@ -68,10 +69,30 @@ const NoticePreview: React.FC<{setCurrentPage: (page: Page) => void; notices: No
                                 <p className="font-semibold text-gray-800">{notice.title}</p>
                                 <p className="text-sm text-gray-500">{notice.date}</p>
                             </div>
-                            <a href={notice.link} className="flex items-center space-x-2 text-primary hover:text-secondary transition-colors p-2 rounded-md hover:bg-base-200">
-                               <DownloadIcon />
-                               <span className="hidden sm:inline">ডাউনলোড</span>
-                            </a>
+                            {notice.type === 'file' ? (
+                                <a 
+                                    href={notice.link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    download={notice.fileName || true}
+                                    className="flex items-center space-x-2 text-primary hover:text-secondary transition-colors p-2 rounded-md hover:bg-base-200"
+                                    title="ডাউনলোড করুন"
+                                >
+                                   <DownloadIcon />
+                                   <span className="hidden sm:inline">ডাউনলোড</span>
+                                </a>
+                            ) : (
+                                <a 
+                                    href={notice.link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors p-2 rounded-md hover:bg-base-200"
+                                    title="লিঙ্ক দেখুন"
+                                >
+                                   <ExternalLinkIcon />
+                                   <span className="hidden sm:inline">লিঙ্ক দেখুন</span>
+                                </a>
+                            )}
                         </li>
                     ))
                 ) : (
@@ -87,33 +108,33 @@ const NoticePreview: React.FC<{setCurrentPage: (page: Page) => void; notices: No
     </div>
 );
 
-const StudentCorner: React.FC = () => (
+const StudentCorner: React.FC<{ setCurrentPage: (page: Page) => void }> = ({ setCurrentPage }) => (
     <div className="bg-primary py-16">
         <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-white mb-12">🎓 স্টুডেন্ট কর্নার</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <a href="#" className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
+                <button onClick={() => setCurrentPage('result')} className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
                     <ResultIcon className="w-16 h-16 text-primary mb-4" />
                     <h3 className="text-2xl font-semibold text-gray-800 mb-2">ফলাফল</h3>
                     <p className="text-gray-600">আপনার পরীক্ষার ফলাফল দেখুন এবং ডাউনলোড করুন।</p>
-                </a>
-                 <a href="#" className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
+                </button>
+                 <button onClick={() => setCurrentPage('class-routine')} className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
                     <RoutineIcon className="w-16 h-16 text-primary mb-4" />
                     <h3 className="text-2xl font-semibold text-gray-800 mb-2">ক্লাস রুটিন</h3>
                     <p className="text-gray-600">সাপ্তাহিক ও পরীক্ষার রুটিন এখান থেকে দেখুন।</p>
-                </a>
-                 <a href="#" className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
+                </button>
+                 <button onClick={() => setCurrentPage('digital-content')} className="bg-base-100 p-8 rounded-lg shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300 flex flex-col items-center justify-start">
                     <DigitalContentIcon className="w-16 h-16 text-primary mb-4" />
                     <h3 className="text-2xl font-semibold text-gray-800 mb-2">ডিজিটাল কনটেন্ট</h3>
                     <p className="text-gray-600">অনলাইন লেকচার ও প্রয়োজনীয় শিক্ষা উপকরণ খুঁজুন।</p>
-                </a>
+                </button>
             </div>
         </div>
     </div>
 );
 
 const ShareSection: React.FC<{ collegeName: string }> = ({ collegeName }) => {
-    const [copyButtonText, setCopyButtonText] = useState('লিঙ্ক কপি করুন');
+    const [copyButtonText, setCopyButtonText] = React.useState('লিঙ্ক কপি করুন');
     const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
 
     const handleCopy = async () => {
@@ -138,13 +159,12 @@ const ShareSection: React.FC<{ collegeName: string }> = ({ collegeName }) => {
           if (navigator.share) {
             await navigator.share(shareData);
           } else {
-            // Fallback to copy. The handleCopy function provides visual user feedback.
             handleCopy();
           }
         } catch (err) {
-          // Don't show an error if the user cancels the share dialog
           if (!(err instanceof DOMException && err.name === 'AbortError')) {
               console.error('Error sharing:', err);
+              handleCopy();
           }
         }
     };
@@ -178,7 +198,7 @@ const ShareSection: React.FC<{ collegeName: string }> = ({ collegeName }) => {
                             onClick={handleShare}
                             className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-secondary text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105"
                         >
-                            <ShareIcon className="w-6 h-6" />
+                            <SendIcon className="w-6 h-6" />
                             <span>এখনই শেয়ার করুন</span>
                         </button>
                     </div>
@@ -196,7 +216,7 @@ const Home: React.FC<HomeProps> = ({setCurrentPage, notices, siteInfo}) => {
       <AboutPreview setCurrentPage={setCurrentPage} established={siteInfo.established} collegeName={siteInfo.collegeName} aboutUsPreview={siteInfo.aboutUsPreview} aboutUsImageUrl={siteInfo.aboutUsImageUrl} />
       <PrincipalMessage message={siteInfo.principalMessage} name={siteInfo.principalName} designation={siteInfo.principalDesignation} imageUrl={siteInfo.principalImageUrl} />
       <NoticePreview setCurrentPage={setCurrentPage} notices={notices} />
-      <StudentCorner />
+      <StudentCorner setCurrentPage={setCurrentPage} />
       <ShareSection collegeName={siteInfo.collegeName} />
     </>
   );

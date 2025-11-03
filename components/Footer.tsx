@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import type { Page, SiteInfo, SocialPlatform } from '../types';
 import { FacebookIcon, TwitterIcon, YoutubeIcon, InstagramIcon } from './Icons';
@@ -48,6 +49,8 @@ const Footer: React.FC<FooterProps> = ({ setCurrentPage, siteInfo }) => {
                       onClick={(e) => {
                          if (link.label === 'ভর্তি তথ্য') handleNavClick(e, 'admission');
                          else if (link.label === 'নোটিশ বোর্ড') handleNavClick(e, 'notices');
+                         else if (link.label === 'ফলাফল') handleNavClick(e, 'result');
+                         else if (link.label === 'ভিডিও গ্যালারি') handleNavClick(e, 'videos');
                          else handleExternalLinkClick(e, link.url);
                       }}
                       target={link.url !== '#' && !link.url.startsWith('/') ? '_blank' : '_self'}

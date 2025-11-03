@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const IMSoftwark: React.FC = () => {
@@ -58,7 +59,7 @@ const IMSoftwark: React.FC = () => {
             </div>
           </div>
         </section>
-        
+
         <section className="mb-12">
             <h2 className="text-3xl font-bold text-primary text-center mb-8">👋 About Me</h2>
             <div className="flex flex-col md:flex-row items-center gap-8 bg-base-200 p-8 rounded-lg shadow">

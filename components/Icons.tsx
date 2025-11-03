@@ -16,6 +16,11 @@ export const DownloadIcon = ({ className = "w-5 h-5" }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
 );
 
+export const ExternalLinkIcon = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+);
+
+
 export const ComputerIcon = ({ className = "w-16 h-16 text-primary" }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
 );
@@ -69,11 +74,18 @@ export const YoutubeIcon = ({ className = "w-6 h-6" }) => (
 );
 
 export const InstagramIcon = ({ className = "w-6 h-6" }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.585-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.585-.012-4.85-.07c-3.252-.148-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.85s.012-3.584.07-4.85c.149-3.227 1.664-4.771 4.919-4.919C8.415 2.175 8.796 2.163 12 2.163zm0 1.623c-3.149 0-3.483.011-4.707.066-2.585.119-3.481 1.022-3.599 3.599-.055 1.224-.066 1.558-.066 4.707s.011 3.483.066 4.707c.119 2.576 1.014 3.48 3.599 3.599 1.224.055 1.558.066 4.707.066s3.483-.011 4.707-.066c2.585-.119 3.48-1.022 3.599-3.599.055-1.224.066-1.558.066-4.707s-.011-3.483-.066-4.707c-.119-2.577-1.014-3.48-3.599-3.599-1.224-.055-1.558-.066-4.707-.066zm0 2.882a5.127 5.127 0 100 10.254 5.127 5.127 0 000-10.254zm0 8.622a3.495 3.495 0 110-6.99 3.495 3.495 0 010 6.99zm6.32-8.312a1.21 1.21 0 100-2.42 1.21 1.21 0 000 2.42z" clipRule="evenodd"></path></svg>
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.585-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.585-.012-4.85-.07c-3.252-.148-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.85s.012-3.584.07-4.85c.149-3.227 1.664-4.771 4.919-4.919C8.415 2.175 8.796 2.163 12 2.163zm0 1.623c-3.149 0-3.483.011-4.707.066-2.585.119-3.481 1.022-3.599 3.599-.055 1.224-.066 1.558-.066 4.707s.011 3.483.066 4.707c.119 2.576 1.014 3.48 3.599 3.599 1.224.055 1.558.066 4.707.066s3.483-.011 4.707-.066c2.585-.119 3.48-1.022 3.599-3.599.055-1.224.066-1.558-.066-4.707s-.011-3.483-.066-4.707c-.119-2.577-1.014-3.48-3.599-3.599-1.224-.055-1.558-.066-4.707-.066zm0 2.882a5.127 5.127 0 100 10.254 5.127 5.127 0 000-10.254zm0 8.622a3.495 3.495 0 110-6.99 3.495 3.495 0 010 6.99zm6.32-8.312a1.21 1.21 0 100-2.42 1.21 1.21 0 000 2.42z" clipRule="evenodd"></path></svg>
 );
 
 export const ShareIcon = ({ className = "w-6 h-6" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.516 3.734m-6.516-6.418l6.516-3.734m0 0a3 3 0 10-6.516-3.734m6.516 3.734a3 3 0 110-6.516 3 3 0 010 6.516z"></path></svg>
+);
+
+export const SendIcon = ({ className = "w-6 h-6" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+    </svg>
 );
 
 export const CopyIcon = ({ className = "w-5 h-5" }) => (
@@ -90,4 +102,8 @@ export const RoutineIcon = ({ className = "w-16 h-16 text-primary" }) => (
 
 export const DigitalContentIcon = ({ className = "w-16 h-16 text-primary" }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+);
+
+export const VideoIcon = ({ className = "w-24 h-24 text-primary" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
 );
