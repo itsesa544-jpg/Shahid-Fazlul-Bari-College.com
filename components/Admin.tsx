@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import type { Notice, Teacher, GalleryItem, SiteInfo, ImportantLink, SocialLink } from '../types';
-import { storage } from '../firebaseConfig';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { GALLERY_CATEGORIES } from '../constants';
 
 interface AdminProps {
@@ -40,174 +38,6 @@ const FormField: React.FC<{label: string, name: string, value: string | number, 
     </div>
 );
 
-const ImageUploadField: React.FC<{
-  label: string;
-  name: string;
-  value: string;
-  onChange: (name: string, value: string) => void;
-  folder: string;
-}> = ({ label, name, value, onChange, folder }) => {
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const fileInputId = `${name}-file-upload`; // Unique ID for file input
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploading(true);
-      setProgress(0);
-      const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      uploadTask.on('state_changed',
-        (snapshot) => {
-          const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(prog);
-        },
-        (error) => {
-          console.error("Upload failed:", error);
-          setUploading(false);
-          alert('ফাইল আপলোড ব্যর্থ হয়েছে।');
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            onChange(name, downloadURL);
-            setUploading(false);
-          });
-        }
-      );
-    }
-  };
-
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(name, e.target.value);
-  };
-
-  return (
-    <div>
-      <label className="block text-gray-700 font-semibold mb-1">{label}</label>
-      <div className="mt-1 flex flex-col gap-4 p-4 bg-gray-50 border-2 border-dashed rounded-lg">
-        {value && (
-          <div className="flex justify-center bg-gray-100 p-2 rounded">
-            <img src={value} alt="Preview" className="max-w-full h-auto max-h-48 object-contain rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          </div>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
-          {/* File Upload Part */}
-          <div className="flex flex-col items-center">
-            <label htmlFor={fileInputId} className={`w-full text-center cursor-pointer bg-primary text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors font-semibold ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-              {uploading ? `আপলোড হচ্ছে...` : 'ফাইল থেকে আপলোড'}
-            </label>
-            <input
-              type="file"
-              id={fileInputId}
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              disabled={uploading}
-            />
-            {uploading && (
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
-              </div>
-            )}
-          </div>
-
-          <div className="text-center text-gray-500 font-semibold hidden md:block">অথবা</div>
-          
-          <hr className="md:hidden" />
-
-          {/* URL Input Part */}
-          <div className="w-full md:col-span-2">
-            <input
-              type="url"
-              placeholder="ছবির লিংক এখানে পেস্ট করুন"
-              value={value || ''}
-              onChange={handleUrlChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-              disabled={uploading}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const FileUploadField: React.FC<{
-  label: string;
-  onUploadComplete: (url: string, fileName: string) => void;
-  folder: string;
-  currentFileName?: string;
-}> = ({ label, onUploadComplete, folder, currentFileName }) => {
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [fileName, setFileName] = useState(currentFileName || '');
-  const fileInputId = `file-upload-${folder}`;
-
-  useEffect(() => {
-    setFileName(currentFileName || '');
-  }, [currentFileName]);
-  
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploading(true);
-      setProgress(0);
-      setFileName(file.name);
-      const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      uploadTask.on('state_changed',
-        (snapshot) => {
-          const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(prog);
-        },
-        (error) => {
-          console.error("Upload failed:", error);
-          setUploading(false);
-          alert('ফাইল আপলোড ব্যর্থ হয়েছে।');
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            onUploadComplete(downloadURL, file.name);
-            setUploading(false);
-          });
-        }
-      );
-    }
-  };
-  
-  return (
-    <div>
-      <label className="block text-gray-700 font-semibold mb-1">{label}</label>
-      <div className="mt-1 flex flex-col gap-4 p-4 bg-gray-50 border-2 border-dashed rounded-lg">
-        {fileName && !uploading && <div className="text-gray-700 font-medium text-center bg-gray-200 p-2 rounded">বর্তমান ফাইল: {fileName}</div>}
-        <div className="flex flex-col items-center">
-          <label htmlFor={fileInputId} className={`w-full text-center cursor-pointer bg-primary text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors font-semibold ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-            {uploading ? `আপলোড হচ্ছে... ${progress.toFixed(0)}%` : 'নতুন ফাইল আপলোড করুন'}
-          </label>
-          <input
-            type="file"
-            id={fileInputId}
-            accept="application/pdf,image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            disabled={uploading}
-          />
-          {uploading && (
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-              <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
 // Component to edit general site content
 const EditSiteContent: React.FC<{ info: SiteInfo, onSave: (info: SiteInfo) => void }> = ({ info, onSave }) => {
     const [formData, setFormData] = useState<SiteInfo>(info);
@@ -218,10 +48,6 @@ const EditSiteContent: React.FC<{ info: SiteInfo, onSave: (info: SiteInfo) => vo
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-     const handleImageUpload = (name: string, value: string) => {
-        setFormData({ ...formData, [name]: value });
     };
 
     const handleLinkChange = (index: number, field: keyof ImportantLink, value: string) => {
@@ -251,7 +77,6 @@ const EditSiteContent: React.FC<{ info: SiteInfo, onSave: (info: SiteInfo) => vo
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave(formData);
-        alert('তথ্য সংরক্ষণ করা হয়েছে!');
     };
     
     return (
@@ -265,22 +90,14 @@ const EditSiteContent: React.FC<{ info: SiteInfo, onSave: (info: SiteInfo) => vo
                         <FormField label="প্রতিষ্ঠানের নাম" name="collegeName" value={formData.collegeName} onChange={handleChange} />
                         <FormField label="স্লোগান" name="slogan" value={formData.slogan} onChange={handleChange} />
                     </div>
-                    <div>
-                        <ImageUploadField 
-                            label="ব্যাকগ্রাউন্ড ছবি" 
-                            name="heroImageUrl" 
-                            value={formData.heroImageUrl} 
-                            onChange={handleImageUpload}
-                            folder="site"
-                        />
-                    </div>
+                    <FormField label="ব্যাকগ্রাউন্ড ছবির URL" name="heroImageUrl" value={formData.heroImageUrl} onChange={handleChange} type="url" />
                 </div>
             </section>
 
             <section>
                 <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">আমাদের সম্পর্কে পাতা</h3>
                 <div className="space-y-6">
-                    <ImageUploadField label="'আমাদের সম্পর্কে' পাতার ছবি" name="aboutUsImageUrl" value={formData.aboutUsImageUrl} onChange={handleImageUpload} folder="site"/>
+                    <FormField label="'আমাদের সম্পর্কে' পাতার ছবির URL" name="aboutUsImageUrl" value={formData.aboutUsImageUrl} onChange={handleChange} type="url"/>
                     <FormField label="'আমাদের সম্পর্কে' পাতার বিবরণ" name="aboutUsFull" value={formData.aboutUsFull} onChange={handleChange} isTextArea={true} />
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                        <FormField label="প্রতিষ্ঠাকাল" name="established" value={formData.established} onChange={handleChange} />
@@ -364,14 +181,9 @@ const EditPrincipalMessage: React.FC<{ info: SiteInfo, onSave: (info: SiteInfo) 
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleImageUpload = (name: string, value: string) => {
-        setFormData({ ...formData, [name]: value });
-    };
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave(formData);
-        alert('তথ্য সংরক্ষণ করা হয়েছে!');
     };
 
     return (
@@ -383,7 +195,7 @@ const EditPrincipalMessage: React.FC<{ info: SiteInfo, onSave: (info: SiteInfo) 
                         <FormField label="অধ্যক্ষের নাম" name="principalName" value={formData.principalName} onChange={handleChange} />
                         <FormField label="পদবী" name="principalDesignation" value={formData.principalDesignation} onChange={handleChange} />
                     </div>
-                    <ImageUploadField label="অধ্যক্ষের ছবি" name="principalImageUrl" value={formData.principalImageUrl} onChange={handleImageUpload} folder="site"/>
+                    <FormField label="অধ্যক্ষের ছবির URL" name="principalImageUrl" value={formData.principalImageUrl} onChange={handleChange} type="url"/>
                     <FormField label="অধ্যক্ষের বাণী" name="principalMessage" value={formData.principalMessage} onChange={handleChange} isTextArea={true} />
                  </div>
             </section>
@@ -401,26 +213,12 @@ const ManageContent: React.FC<{
   items: Notice[];
   onSave: (item: Partial<Notice>) => void;
   onDelete: (id: string) => void;
-  folder: string;
   newItemLabel: string;
-}> = ({ title, items, onSave, onDelete, folder, newItemLabel }) => {
+}> = ({ title, items, onSave, onDelete, newItemLabel }) => {
     const [editItem, setEditItem] = useState<Partial<Notice> | null>(null);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditItem({ ...editItem, [e.target.name]: e.target.value });
-    };
-    
-    const handleTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const type = e.target.value as 'file' | 'link';
-        const updatedItem = { ...editItem, type };
-        if (type === 'link') {
-            updatedItem.fileName = '';
-        }
-        setEditItem(updatedItem);
-    };
-
-    const handleFileUpload = (url: string, fileName: string) => {
-        setEditItem({ ...editItem, link: url, fileName: fileName });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -437,7 +235,7 @@ const ManageContent: React.FC<{
         <div>
             <div className="flex justify-between items-center mb-6">
                  <h2 className="text-2xl font-bold text-primary">{title}</h2>
-                 <button onClick={() => setEditItem({title: '', date: new Date().toISOString().split('T')[0], link: '#', type: 'file', fileName: ''})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ {newItemLabel}</button>
+                 <button onClick={() => setEditItem({title: '', date: new Date().toISOString().split('T')[0], link: '', type: 'link'})} className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition-colors font-bold">+ {newItemLabel}</button>
             </div>
             
             {editItem && (
@@ -445,32 +243,8 @@ const ManageContent: React.FC<{
                     <h3 className="text-xl font-bold mb-4 text-primary">{editItem.id ? 'সম্পাদনা করুন' : newItemLabel}</h3>
                     <FormField label="শিরোনাম" name="title" value={editItem.title || ''} onChange={handleInputChange} />
                     <FormField label="তারিখ" name="date" type="date" value={editItem.date?.split('T')[0] || ''} onChange={handleInputChange} />
+                    <FormField label="লিঙ্ক URL" name="link" value={editItem.link || ''} onChange={handleInputChange} type="url"/>
                     
-                    <div>
-                        <label className="block font-semibold text-gray-700 mb-2">ধরণ</label>
-                        <div className="flex gap-x-6">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="type" value="file" checked={editItem.type === 'file'} onChange={handleTypeChange} className="form-radio h-5 w-5 text-primary focus:ring-primary" />
-                                <span>ফাইল আপলোড (PDF/Image)</span>
-                            </label>
-                             <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="type" value="link" checked={editItem.type === 'link'} onChange={handleTypeChange} className="form-radio h-5 w-5 text-primary focus:ring-primary" />
-                                <span>বহিরাগত লিঙ্ক</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {editItem.type === 'file' ? (
-                        <FileUploadField 
-                            label="ফাইল আপলোড করুন" 
-                            onUploadComplete={handleFileUpload} 
-                            folder={folder} 
-                            currentFileName={editItem.fileName} 
-                        />
-                    ) : (
-                        <FormField label="লিঙ্ক URL" name="link" value={editItem.link || ''} onChange={handleInputChange} type="url"/>
-                    )}
-
                     <div className="flex gap-2 pt-2">
                         <button type="submit" className="bg-secondary text-white px-4 py-2 rounded hover:bg-primary transition-colors">সংরক্ষণ করুন</button>
                         <button type="button" onClick={() => setEditItem(null)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition-colors">বাতিল করুন</button>
@@ -504,10 +278,6 @@ const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<T
         setEditItem({ ...editItem, [e.target.name]: e.target.value });
     };
 
-    const handleImageUpload = (name: string, value: string) => {
-        setEditItem({ ...editItem, [name]: value });
-    };
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editItem && editItem.name && editItem.designation && editItem.imageUrl && editItem.details) {
@@ -530,20 +300,14 @@ const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<T
                      <h3 className="text-xl font-bold mb-4 text-primary">{editItem.id ? 'শিক্ষকের তথ্য সম্পাদনা করুন' : 'নতুন শিক্ষক'}</h3>
                     <FormField label="নাম" name="name" value={editItem.name || ''} onChange={handleInputChange} />
                     <FormField label="পদবী" name="designation" value={editItem.designation || ''} onChange={handleInputChange} />
-                    <div>
-                        <label htmlFor="details" className="block text-gray-700 font-semibold mb-1">বিস্তারিত তথ্য</label>
-                        <textarea
-                            id="details"
-                            name="details"
-                            value={editItem.details || ''}
-                            onChange={handleInputChange}
-                            rows={8}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-                            placeholder={`শিক্ষকের বিস্তারিত তথ্য লিখুন। যেমন:\n\nশিক্ষাগত যোগ্যতা:\n- স্নাতক (Honours) এবং স্নাতকোত্তর (Master’s) ডিগ্রি।\n- B.Ed (Bachelor of Education) ডিগ্রি।\n\nঅতিরিক্ত গুণাবলি:\n- ভালো বক্তৃতা ও বোঝানোর দক্ষতা।\n- ধৈর্য, নৈতিকতা ও নেতৃত্বগুণ।`}
-                            required
-                        ></textarea>
-                    </div>
-                    <ImageUploadField label="শিক্ষকের ছবি" name="imageUrl" value={editItem.imageUrl || ''} onChange={handleImageUpload} folder="teachers"/>
+                    <FormField 
+                        label="বিস্তারিত তথ্য"
+                        name="details" 
+                        value={editItem.details || ''} 
+                        onChange={handleInputChange} 
+                        isTextArea={true} 
+                    />
+                    <FormField label="শিক্ষকের ছবির URL" name="imageUrl" value={editItem.imageUrl || ''} onChange={handleInputChange} type="url"/>
                     <div className="flex gap-2 pt-2">
                         <button type="submit" className="bg-secondary text-white px-4 py-2 rounded hover:bg-primary transition-colors">সংরক্ষণ করুন</button>
                         <button type="button" onClick={() => setEditItem(null)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition-colors">বাতিল করুন</button>
@@ -570,16 +334,6 @@ const ManageTeachers: React.FC<{teachers: Teacher[], onSave: (teacher: Partial<T
 // Sub-component for managing gallery
 const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<GalleryItem>) => void, onDelete: (id: string) => void}> = ({ items, onSave, onDelete }) => {
     const [editItem, setEditItem] = useState<Partial<GalleryItem> | null>(null);
-    const [charCount, setCharCount] = useState({ title: 0, description: 0 });
-    
-    useEffect(() => {
-        if (editItem) {
-            setCharCount({
-                title: editItem.title?.length || 0,
-                description: editItem.description?.length || 0,
-            });
-        }
-    }, [editItem]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -590,14 +344,6 @@ const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<Gall
         }
 
         setEditItem({ ...editItem, [name]: processedValue });
-
-        if (name === 'title' || name === 'description') {
-             setCharCount(prev => ({ ...prev, [name]: value.length }));
-        }
-    };
-
-    const handleImageUpload = (name: string, value: string) => {
-        setEditItem({ ...editItem, [name]: value });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -641,36 +387,10 @@ const ManageGallery: React.FC<{items: GalleryItem[], onSave: (item: Partial<Gall
                         </div>
                         <FormField label="সাল" name="year" type="number" value={editItem.year || new Date().getFullYear()} onChange={handleInputChange} />
                     </div>
-                    <div>
-                        <label htmlFor="title" className="block text-gray-700 font-semibold mb-1">শিরোনাম</label>
-                        <input 
-                            type="text" 
-                            id="title" 
-                            name="title" 
-                            value={editItem.title || ''} 
-                            onChange={handleInputChange} 
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
-                            required 
-                            maxLength={60}
-                        />
-                        <small className="text-gray-500">{charCount.title}/60 অক্ষর</small>
-                    </div>
-                    <div>
-                        <label htmlFor="description" className="block text-gray-700 font-semibold mb-1">বিবরণ</label>
-                        <textarea 
-                            id="description" 
-                            name="description" 
-                            value={editItem.description || ''} 
-                            onChange={handleInputChange} 
-                            rows={3} 
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
-                            required 
-                            maxLength={200}
-                        />
-                        <small className="text-gray-500">{charCount.description}/200 অক্ষর</small>
-                    </div>
-                    <FormField label="বিকল্প লেখা (Alt Text for accessibility)" name="alt" value={editItem.alt || ''} onChange={handleInputChange} />
-                    <ImageUploadField label="ছবি আপলোড করুন" name="imageUrl" value={editItem.imageUrl || ''} onChange={handleImageUpload} folder="gallery" />
+                    <FormField label="শিরোনাম" name="title" value={editItem.title || ''} onChange={handleInputChange} />
+                    <FormField label="বিবরণ" name="description" value={editItem.description || ''} onChange={handleInputChange} isTextArea={true} />
+                    <FormField label="বিকল্প লেখা (Alt Text)" name="alt" value={editItem.alt || ''} onChange={handleInputChange} />
+                    <FormField label="ছবির URL" name="imageUrl" value={editItem.imageUrl || ''} onChange={handleInputChange} type="url"/>
                     <div className="flex gap-2 pt-2">
                         <button type="submit" className="bg-secondary text-white px-4 py-2 rounded hover:bg-primary transition-colors">সংরক্ষণ করুন</button>
                         <button type="button" onClick={() => setEditItem(null)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition-colors">বাতিল করুন</button>
@@ -730,13 +450,13 @@ const Admin: React.FC<AdminProps> = (props) => {
             case 'principal':
                 return <EditPrincipalMessage info={siteInfo} onSave={onSaveSiteInfo} />;
             case 'notices':
-                return <ManageContent title="নোটিশ বোর্ড ম্যানেজ করুন" items={notices} onSave={onSaveNotice} onDelete={onDeleteNotice} folder="notices" newItemLabel="নতুন নোটিশ" />;
+                return <ManageContent title="নোটিশ বোর্ড ম্যানেজ করুন" items={notices} onSave={onSaveNotice} onDelete={onDeleteNotice} newItemLabel="নতুন নোটিশ" />;
             case 'results':
-                return <ManageContent title="ফলাফল ম্যানেজ করুন" items={results} onSave={onSaveResult} onDelete={onDeleteResult} folder="results" newItemLabel="নতুন ফলাফল" />;
+                return <ManageContent title="ফলাফল ম্যানেজ করুন" items={results} onSave={onSaveResult} onDelete={onDeleteResult} newItemLabel="নতুন ফলাফল" />;
             case 'routines':
-                return <ManageContent title="ক্লাস রুটিন ম্যানেজ করুন" items={routines} onSave={onSaveRoutine} onDelete={onDeleteRoutine} folder="routines" newItemLabel="নতুন রুটিন" />;
+                return <ManageContent title="ক্লাস রুটিন ম্যানেজ করুন" items={routines} onSave={onSaveRoutine} onDelete={onDeleteRoutine} newItemLabel="নতুন রুটিন" />;
             case 'digital-content':
-                return <ManageContent title="ডিজিটাল কনটেন্ট ম্যানেজ করুন" items={digitalContents} onSave={onSaveDigitalContent} onDelete={onDeleteDigitalContent} folder="digital_content" newItemLabel="নতুন কনটেন্ট" />;
+                return <ManageContent title="ডিজিটাল কনটেন্ট ম্যানেজ করুন" items={digitalContents} onSave={onSaveDigitalContent} onDelete={onDeleteDigitalContent} newItemLabel="নতুন কনটেন্ট" />;
             case 'teachers':
                 return <ManageTeachers teachers={teachers} onSave={onSaveTeacher} onDelete={onDeleteTeacher} />;
             case 'gallery':

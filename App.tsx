@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -20,69 +19,26 @@ import DigitalContent from './components/DigitalContent';
 import ClassRoutine from './components/ClassRoutine';
 import type { Page, Notice, Teacher, GalleryItem, SiteInfo } from './types';
 import { DEFAULT_SITE_INFO, MOCK_NOTICES, MOCK_TEACHERS, MOCK_GALLERY_ITEMS, MOCK_RESULTS, MOCK_ROUTINES, MOCK_DIGITAL_CONTENTS } from './constants';
-import { db, storage } from './firebaseConfig';
-import { collection, onSnapshot, doc, setDoc, addDoc, deleteDoc, orderBy, query } from 'firebase/firestore';
-import { ref, deleteObject } from 'firebase/storage';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [dataLoading, setDataLoading] = useState(true);
   const [selectedGalleryItemId, setSelectedGalleryItemId] = useState<string | null>(null);
 
-  // State for dynamic content
-  const [notices, setNotices] = useState<Notice[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  // State for content, initialized with MOCK data as Firebase is removed
+  const [notices, setNotices] = useState<Notice[]>(MOCK_NOTICES);
+  const [teachers, setTeachers] = useState<Teacher[]>(MOCK_TEACHERS);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(MOCK_GALLERY_ITEMS);
   const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO);
-  const [results, setResults] = useState<Notice[]>([]);
-  const [routines, setRoutines] = useState<Notice[]>([]);
-  const [digitalContents, setDigitalContents] = useState<Notice[]>([]);
+  const [results, setResults] = useState<Notice[]>(MOCK_RESULTS);
+  const [routines, setRoutines] = useState<Notice[]>(MOCK_ROUTINES);
+  const [digitalContents, setDigitalContents] = useState<Notice[]>(MOCK_DIGITAL_CONTENTS);
 
-
-  // Firestore real-time listeners
+  // Simulate data loading without Firebase
   useEffect(() => {
     setDataLoading(true);
-    const unsubscribers = [
-      onSnapshot(query(collection(db, 'notices'), orderBy('date', 'desc')), (snapshot) => {
-        const noticesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
-        setNotices(noticesData.length > 0 ? noticesData : MOCK_NOTICES);
-      }),
-       onSnapshot(query(collection(db, 'results'), orderBy('date', 'desc')), (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
-        setResults(data.length > 0 ? data : MOCK_RESULTS);
-      }),
-      onSnapshot(query(collection(db, 'routines'), orderBy('date', 'desc')), (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
-        setRoutines(data.length > 0 ? data : MOCK_ROUTINES);
-      }),
-      onSnapshot(query(collection(db, 'digital_content'), orderBy('date', 'desc')), (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
-        setDigitalContents(data.length > 0 ? data : MOCK_DIGITAL_CONTENTS);
-      }),
-      onSnapshot(collection(db, 'teachers'), (snapshot) => {
-        const teachersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher));
-        setTeachers(teachersData.length > 0 ? teachersData : MOCK_TEACHERS);
-      }),
-      onSnapshot(collection(db, 'galleryItems'), (snapshot) => {
-        const galleryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryItem));
-        setGalleryItems(galleryData.length > 0 ? galleryData : MOCK_GALLERY_ITEMS);
-      }),
-      onSnapshot(doc(db, 'site_info', 'main'), (doc) => {
-        if (doc.exists()) {
-          setSiteInfo(doc.data() as SiteInfo);
-        } else {
-            setDoc(doc.ref, DEFAULT_SITE_INFO);
-            setSiteInfo(DEFAULT_SITE_INFO);
-        }
-      })
-    ];
-    
     const timer = setTimeout(() => setDataLoading(false), 500);
-
-    return () => {
-      unsubscribers.forEach(unsub => unsub());
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, []);
 
 
@@ -90,75 +46,34 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   }, [currentPage]);
 
-  // Helper to delete files from storage
-  const deleteStorageFile = async (fileUrl: string) => {
-    if (!fileUrl || !fileUrl.includes('firebasestorage.googleapis.com')) return;
-    try {
-      const storageRef = ref(storage, fileUrl);
-      await deleteObject(storageRef);
-    } catch (error) {
-      console.error("Error deleting file from storage:", error);
-    }
-  };
-  
-  // Generic CRUD Handlers for Notice-like collections
-  const createSaveHandler = (collectionName: string) => async (item: Notice) => {
-    const { id, ...data } = item;
-    if (id) {
-        await setDoc(doc(db, collectionName, id), data, { merge: true });
-    } else {
-        await addDoc(collection(db, collectionName), data);
-    }
+  // Dummy handlers since Firebase is removed. These will show alerts but not save data.
+  const createDummySaveHandler = (collectionName: string) => (item: any) => {
+    console.log(`Saving item to ${collectionName}:`, item);
+    alert(`"${collectionName}" সেভ হয়েছে! (এটি একটি ডেমো, তথ্য স্থায়ীভাবে সেভ হবে না)`);
   };
 
-  const createDeleteHandler = (collectionName: string) => async (id: string) => {
-      await deleteDoc(doc(db, collectionName, id));
+  const createDummyDeleteHandler = (collectionName: string) => (id: string) => {
+    console.log(`Deleting item ${id} from ${collectionName}`);
+    alert(`"${collectionName}" থেকে আইটেম মুছে ফেলা হয়েছে! (এটি একটি ডেমো, তথ্য স্থায়ীভাবে সেভ হবে না)`);
   };
 
-  const handleSaveNotice = createSaveHandler('notices');
-  const handleDeleteNotice = createDeleteHandler('notices');
-  const handleSaveResult = createSaveHandler('results');
-  const handleDeleteResult = createDeleteHandler('results');
-  const handleSaveRoutine = createSaveHandler('routines');
-  const handleDeleteRoutine = createDeleteHandler('routines');
-  const handleSaveDigitalContent = createSaveHandler('digital_content');
-  const handleDeleteDigitalContent = createDeleteHandler('digital_content');
+  const handleSaveNotice = createDummySaveHandler('notices');
+  const handleDeleteNotice = createDummyDeleteHandler('notices');
+  const handleSaveResult = createDummySaveHandler('results');
+  const handleDeleteResult = createDummyDeleteHandler('results');
+  const handleSaveRoutine = createDummySaveHandler('routines');
+  const handleDeleteRoutine = createDummyDeleteHandler('routines');
+  const handleSaveDigitalContent = createDummySaveHandler('digital_content');
+  const handleDeleteDigitalContent = createDummyDeleteHandler('digital_content');
+  const handleSaveTeacher = createDummySaveHandler('teachers');
+  const handleDeleteTeacher = createDummyDeleteHandler('teachers');
+  const handleSaveGalleryItem = createDummySaveHandler('galleryItems');
+  const handleDeleteGalleryItem = createDummyDeleteHandler('galleryItems');
 
-
-  const handleSaveTeacher = async (teacher: Teacher) => {
-    const { id, ...teacherData } = teacher;
-    if (id) {
-      await setDoc(doc(db, 'teachers', id), teacherData, { merge: true });
-    } else {
-      await addDoc(collection(db, 'teachers'), teacherData);
-    }
-  };
-  const handleDeleteTeacher = async (id: string) => {
-    const teacherToDelete = teachers.find(t => t.id === id);
-    if (teacherToDelete?.imageUrl) {
-        await deleteStorageFile(teacherToDelete.imageUrl);
-    }
-    await deleteDoc(doc(db, 'teachers', id));
-  };
-  
-  const handleSaveGalleryItem = async (item: GalleryItem) => {
-    const { id, ...itemData } = item;
-    if (id) {
-        await setDoc(doc(db, 'galleryItems', id), itemData, { merge: true });
-    } else {
-        await addDoc(collection(db, 'galleryItems'), itemData);
-    }
-  };
-  const handleDeleteGalleryItem = async (id: string) => {
-    const itemToDelete = galleryItems.find(item => item.id === id);
-    if(itemToDelete?.imageUrl) {
-        await deleteStorageFile(itemToDelete.imageUrl);
-    }
-    await deleteDoc(doc(db, 'galleryItems', id));
-  };
-
-  const handleSaveSiteInfo = async (info: SiteInfo) => {
-    await setDoc(doc(db, 'site_info', 'main'), info);
+  const handleSaveSiteInfo = (info: SiteInfo) => {
+    setSiteInfo(info);
+    console.log('Saving site info:', info);
+    alert('সাইটের তথ্য সেভ হয়েছে! (এটি একটি ডেমো, পরিবর্তনগুলো পৃষ্ঠা রিফ্রেশ করলে চলে যাবে)');
   };
 
   const handleLogout = () => {
@@ -181,7 +96,7 @@ const App: React.FC = () => {
             </div>
         );
     }
-      
+    
     switch (currentPage) {
       case 'home':
         return <Home setCurrentPage={setCurrentPage} notices={notices} siteInfo={siteInfo} />;
@@ -200,7 +115,6 @@ const App: React.FC = () => {
           if (selectedItem) {
               return <GalleryItemDetail item={selectedItem} setCurrentPage={setCurrentPage} />;
           }
-          // Fallback if item not found, go back to gallery
           setCurrentPage('gallery');
           return <Gallery galleryItems={galleryItems} onViewItem={viewGalleryItem} />;
       }
@@ -219,6 +133,7 @@ const App: React.FC = () => {
       case 'class-routine':
         return <ClassRoutine routines={routines} />;
       case 'admin':
+          // Login check removed
           return <Admin
               notices={notices}
               teachers={teachers}
