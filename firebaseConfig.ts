@@ -1,3 +1,1 @@
-// Firebase has been removed from this project as per the user's request.
-// This file is intentionally left blank to disable Firebase services.
-export {};
+// All Firebase-related code has been removed from this project as requested.

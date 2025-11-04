@@ -45,7 +45,10 @@ export const DEFAULT_SITE_INFO: SiteInfo = {
         { id: generateId(), platform: 'twitter', url: '#' },
         { id: generateId(), platform: 'youtube', url: '#' },
         { id: generateId(), platform: 'instagram', url: '#' },
-    ]
+    ],
+    officeHoursDays: "শনিবার - বৃহস্পতিবার",
+    officeHoursTime: "সকাল ৯:০০ টা - বিকাল ৪:০০ টা",
+    locationMapUrl: "https://maps.app.goo.gl/tqJk3j4X8B9yZz4aA",
 };
 
 
@@ -85,12 +88,54 @@ export const MOCK_DIGITAL_CONTENTS: Notice[] = [
 
 
 export const MOCK_TEACHERS: Teacher[] = [
-  { id: '1', name: 'মোঃ মাহবুব আলম (মানিক)', designation: 'প্রতিষ্ঠাতা ও অধ্যক্ষ', imageUrl: 'https://picsum.photos/seed/1/400/400', details: 'শিক্ষাগত যোগ্যতা:\n- স্নাতকোত্তর (Master’s) ডিগ্রি।\n- শিক্ষা প্রশাসনে ২০ বছরের অভিজ্ঞতা।\n\nঅতিরিক্ত গুণাবলি:\n- দূরদর্শী ও দক্ষ নেতৃত্বগুণ।\n- শিক্ষার্থীদের প্রতি সহানুভূতি ও দায়িত্ববোধ।' },
-  { id: '2', name: 'আব্দুল করিম', designation: 'সহকারী অধ্যাপক (বাণিজ্য)', imageUrl: 'https://picsum.photos/seed/2/400/400', details: 'শিক্ষাগত যোগ্যতা:\n- বাণিজ্য বিভাগে স্নাতকোত্তর।\n- B.Ed (Bachelor of Education) ডিগ্রি।\n\nঅতিরিক্ত গুণাবলি:\n- জটিল বিষয় সহজভাবে বোঝানোর দক্ষতা।\n- ধৈর্য ও নৈতিকতা।' },
-  { id: '3', name: 'ফাতেমা বেগম', designation: 'ইন্সট্রাক্টর (কম্পিউটার)', imageUrl: 'https://picsum.photos/seed/3/400/400', details: 'শিক্ষাগত যোগ্যতা:\n- কম্পিউটার সায়েন্সে স্নাতক (B.Sc)।\n- প্রোগ্রামিং ও নেটওয়ার্কিং-এ বিশেষ পারদর্শী।\n\nঅতিরিক্ত গুণাবলি:\n- প্রযুক্তিগত উদ্ভাবনে আগ্রহী।\n- শিক্ষার্থীদের হাতে-কলমে শেখানোর দক্ষতা।' },
-  { id: '4', name: 'রহমান আলী', designation: 'ইন্সট্রাক্টর (ইলেকট্রিক্যাল)', imageUrl: 'https://picsum.photos/seed/4/400/400', details: 'শিক্ষাগত যোগ্যতা:\n- ইলেকট্রিক্যাল ইঞ্জিনিয়ারিংয়ে ডিপ্লোমা।\n- বাস্তবভিত্তিক প্রশিক্ষণে ৫ বছরের অভিজ্ঞতা।\n\nঅতিরিক্ত গুণাবলি:\n- কর্মমুখী শিক্ষাদানে পারদর্শী।\n- নিরাপত্তা ও 규وابলি সম্পর্কে সচেতন।' },
-  { id: '5', name: 'শামীমা আক্তার', designation: 'প্রভাষক (হিসাববিজ্ঞান)', imageUrl: 'https://picsum.photos/seed/5/400/400', details: 'শিক্ষাগত যোগ্যতা:\n- হিসাববিজ্ঞানে স্নাতকোত্তর।\n- NTRCA সনদপ্রাপ্ত।\n\nঅতিরিক্ত গুণাবলি:\n- সঠিক ও নির্ভুলভাবে হিসাব শিক্ষাদানে দক্ষ।\n- শিক্ষার্থীদের প্রতি দায়িত্বশীল।' },
-  { id: '6', name: 'নজরুল ইসলাম', designation: 'প্রভাষক (ব্যবস্থাপনা)', imageUrl: 'https://picsum.photos/seed/6/400/400', details: 'শিক্ষাগত যোগ্যতা:\n- ব্যবস্থাপনা বিষয়ে স্নাতকোত্তর।\n- ব্যবসায় প্রশাসনে বিশেষ জ্ঞান।\n\nঅতিরিক্ত গুণাবলি:\n- চমৎকার উপস্থাপনা ও যোগাযোগের দক্ষতা।\n- শিক্ষার্থীদের অনুপ্রাণিত করতে সক্ষম।' },
+  { 
+    id: '1', 
+    name: 'মোঃ মাহবুব আলম (মানিক)', 
+    designation: 'প্রতিষ্ঠাতা ও অধ্যক্ষ', 
+    imageUrl: 'https://picsum.photos/seed/1/400/400', 
+    educationalQualification: '- স্নাতকোত্তর (Master’s) ডিগ্রি।\n- শিক্ষা প্রশাসনে ২০ বছরের অভিজ্ঞতা।',
+    additionalQualities: '- দূরদর্শী ও দক্ষ নেতৃত্বগুণ।\n- শিক্ষার্থীদের প্রতি সহানুভূতি ও দায়িত্ববোধ।' 
+  },
+  { 
+    id: '2', 
+    name: 'আব্দুল করিম', 
+    designation: 'সহকারী অধ্যাপক (বাণিজ্য)', 
+    imageUrl: 'https://picsum.photos/seed/2/400/400', 
+    educationalQualification: '- বাণিজ্য বিভাগে স্নাতকোত্তর।\n- B.Ed (Bachelor of Education) ডিগ্রি।',
+    additionalQualities: '- জটিল বিষয় সহজভাবে বোঝানোর দক্ষতা।\n- ধৈর্য ও নৈতিকতা।'
+  },
+  { 
+    id: '3', 
+    name: 'ফাতেমা বেগম', 
+    designation: 'ইন্সট্রাক্টর (কম্পিউটার)', 
+    imageUrl: 'https://picsum.photos/seed/3/400/400', 
+    educationalQualification: '- কম্পিউটার সায়েন্সে স্নাতক (B.Sc)।\n- প্রোগ্রামিং ও নেটওয়ার্কিং-এ বিশেষ পারদর্শী।',
+    additionalQualities: '- প্রযুক্তিগত উদ্ভাবনে আগ্রহী।\n- শিক্ষার্থীদের হাতে-কলমে শেখানোর দক্ষতা।'
+  },
+  { 
+    id: '4', 
+    name: 'রহমান আলী', 
+    designation: 'ইন্সট্রাক্টর (ইলেকট্রিক্যাল)', 
+    imageUrl: 'https://picsum.photos/seed/4/400/400', 
+    educationalQualification: '- ইলেকট্রিক্যাল ইঞ্জিনিয়ারিংয়ে ডিপ্লোমা।\n- বাস্তবভিত্তিক প্রশিক্ষণে ৫ বছরের অভিজ্ঞতা।',
+    additionalQualities: '- কর্মমুখী শিক্ষাদানে পারদর্শী।\n- নিরাপত্তা ও 규وابলি সম্পর্কে সচেতন।'
+  },
+  { 
+    id: '5', 
+    name: 'শামীমা আক্তার', 
+    designation: 'প্রভাষক (হিসাববিজ্ঞান)', 
+    imageUrl: 'https://picsum.photos/seed/5/400/400', 
+    educationalQualification: '- হিসাববিজ্ঞানে স্নাতকোত্তর।\n- NTRCA সনদপ্রাপ্ত।',
+    additionalQualities: '- সঠিক ও নির্ভুলভাবে হিসাব শিক্ষাদানে দক্ষ।\n- শিক্ষার্থীদের প্রতি দায়িত্বশীল।'
+  },
+  { 
+    id: '6', 
+    name: 'নজরুল ইসলাম', 
+    designation: 'প্রভাষক (ব্যবস্থাপনা)', 
+    imageUrl: 'https://picsum.photos/seed/6/400/400', 
+    educationalQualification: '- ব্যবস্থাপনা বিষয়ে স্নাতকোত্তর।\n- ব্যবসায় প্রশাসনে বিশেষ জ্ঞান।',
+    additionalQualities: '- চমৎকার উপস্থাপনা ও যোগাযোগের দক্ষতা।\n- শিক্ষার্থীদের অনুপ্রাণিত করতে সক্ষম।'
+  },
 ];
 
 export const MOCK_GALLERY_ITEMS: GalleryItem[] = [

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import type { Page } from '../types';
 import { NAV_LINKS } from '../constants';
-import { MenuIcon, CloseIcon, SendIcon } from './Icons';
+import { MenuIcon, CloseIcon, ShareOutlineIcon } from './Icons';
 
 interface HeaderProps {
   currentPage: Page;
@@ -67,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, collegeNam
                     aria-label="শেয়ার করুন"
                     title="শেয়ার করুন"
                   >
-                    <SendIcon className="h-4 w-4 md:h-6 md:w-6" />
+                    <ShareOutlineIcon className="h-4 w-4 md:h-6 md:w-6" />
                   </button>
                   {showCopyMessage && (
                       <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-700 text-white text-xs rounded py-1 px-2 shadow-lg z-10">
@@ -104,7 +104,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setCurrentPage, collegeNam
                   aria-label="শেয়ার করুন"
                   title="শেয়ার করুন"
                 >
-                   <SendIcon className="h-6 w-6" />
+                   <ShareOutlineIcon className="h-6 w-6" />
                 </button>
                  {showCopyMessage && (
                     <span className="absolute top-full right-0 mt-2 w-max bg-gray-700 text-white text-xs rounded py-1 px-2 shadow-lg z-10">

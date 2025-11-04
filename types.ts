@@ -1,6 +1,7 @@
 import type React from 'react';
 
-export type Page = 'home' | 'about' | 'departments' | 'admission' | 'notices' | 'gallery' | 'teachers' | 'contact' | 'admin' | 'imsoftwark' | 'result' | 'videos' | 'digital-content' | 'gallery-item' | 'class-routine';
+export type Page = 'home' | 'about' | 'departments' | 'admission' | 'notices' | 'gallery' | 'teachers' | 'contact' | 'imsoftwark' | 'result' | 'videos' | 'digital-content' | 'gallery-item' | 'class-routine' 
+| 'admin-login' | 'admin-dashboard' | 'admin-site-info' | 'admin-teachers' | 'admin-notices' | 'admin-gallery' | 'admin-results' | 'admin-routines' | 'admin-digital-content' | 'admin-contact-info';
 
 export interface NavLink {
     id: Page;
@@ -21,7 +22,8 @@ export interface Teacher {
   name: string;
   designation: string;
   imageUrl: string;
-  details: string;
+  educationalQualification: string;
+  additionalQualities: string;
 }
 
 export interface GalleryItem {
@@ -77,4 +79,7 @@ export interface SiteInfo {
   vision: string;
   importantLinks: ImportantLink[];
   socialLinks: SocialLink[];
+  officeHoursDays: string;
+  officeHoursTime: string;
+  locationMapUrl: string;
 }

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { Page, Notice, SiteInfo } from '../types';
-import { ChevronRightIcon, DownloadIcon, SendIcon, CopyIcon, ResultIcon, RoutineIcon, DigitalContentIcon, ExternalLinkIcon } from './Icons';
+import { ChevronRightIcon, DownloadIcon, ShareOutlineIcon, CopyIcon, ResultIcon, RoutineIcon, DigitalContentIcon, ExternalLinkIcon } from './Icons';
 
 interface HomeProps {
     setCurrentPage: (page: Page) => void;
@@ -198,7 +198,7 @@ const ShareSection: React.FC<{ collegeName: string }> = ({ collegeName }) => {
                             onClick={handleShare}
                             className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-secondary text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105"
                         >
-                            <SendIcon className="w-6 h-6" />
+                            <ShareOutlineIcon className="w-6 h-6" />
                             <span>এখনই শেয়ার করুন</span>
                         </button>
                     </div>

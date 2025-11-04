@@ -1,6 +1,4 @@
-
-
-import React from 'react';
+import React, { useState } from 'react';
 import type { Page, SiteInfo, SocialPlatform } from '../types';
 import { FacebookIcon, TwitterIcon, YoutubeIcon, InstagramIcon } from './Icons';
 
@@ -17,6 +15,8 @@ const socialIconMap: Record<SocialPlatform, React.ReactNode> = {
 };
 
 const Footer: React.FC<FooterProps> = ({ setCurrentPage, siteInfo }) => {
+  const [adminClickCount, setAdminClickCount] = useState(0);
+
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, page: Page) => {
     e.preventDefault();
     setCurrentPage(page);
@@ -26,6 +26,16 @@ const Footer: React.FC<FooterProps> = ({ setCurrentPage, siteInfo }) => {
     if (url === '#') {
       e.preventDefault();
       // maybe scroll to top or some other default behavior for placeholder links
+    }
+  };
+  
+  const handleAdminAccess = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const newCount = adminClickCount + 1;
+    setAdminClickCount(newCount);
+    if (newCount >= 5) {
+        setCurrentPage('admin-login');
+        setAdminClickCount(0);
     }
   };
 
@@ -74,11 +84,9 @@ const Footer: React.FC<FooterProps> = ({ setCurrentPage, siteInfo }) => {
           </div>
         </div>
         <div className="mt-8 border-t border-gray-700 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} {siteInfo.collegeName}. সর্বস্বত্ব সংরক্ষিত।</p>
-          <div className="mt-1 flex justify-center items-center space-x-2">
+          <p onClick={handleAdminAccess} className="cursor-pointer">&copy; 2025 {siteInfo.collegeName}. সর্বস্বত্ব সংরক্ষিত।</p>
+          <div className="mt-1 flex justify-center items-center space-x-4">
             <a href="#" onClick={(e) => handleNavClick(e, 'imsoftwark')} className="hover:text-white">Powered by IM Softwark</a>
-            <span className="text-gray-600">|</span>
-            <a href="#" onClick={(e) => handleNavClick(e, 'admin')} className="hover:text-white">Admin</a>
           </div>
         </div>
       </div>

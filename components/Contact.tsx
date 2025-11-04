@@ -1,28 +1,10 @@
-
 import React from 'react';
 import type { SiteInfo } from '../types';
+import { LocationPinIcon, PhoneIcon, EmailIcon, ClockIcon } from './Icons';
 
 interface ContactProps {
   siteInfo: SiteInfo;
 }
-
-// Icon Components
-const LocationPinIcon = ({ className = "w-6 h-6" }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-);
-
-const PhoneIcon = ({ className = "w-6 h-6" }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-);
-
-const EmailIcon = ({ className = "w-6 h-6" }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-);
-
-const ClockIcon = ({ className = "w-6 h-6" }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-);
-
 
 const Contact: React.FC<ContactProps> = ({ siteInfo }) => {
   return (
@@ -63,17 +45,18 @@ const Contact: React.FC<ContactProps> = ({ siteInfo }) => {
                   </div>
               </div>
             </div>
-            <div className="h-96 rounded-lg shadow-md overflow-hidden">
-                 <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3615.155702206497!2d89.28587107590897!3d24.99845767782046!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39fc5c792376b339%3A0xc92496d00465a396!2z4Ka24Ka_4Kay4KeB4KafIOCmh-Cmv-CmsuCnh-Cmn-CmvuCmsOCnh-CmuCDgppbgprLgpp_gpr_gprrgpr_gprrgprgg4KaP4KaoIOCmo-Cmv-Cml-Cnh-Cmn-CmvuCmsiDgprDgpp_gprrgpr_gprrgpr7gprLgpr_gprfgp4fgprY!5e0!3m2!1sbn!2sbd!4v1719914158589!5m2!1sbn!2sbd" 
-                    width="100%" 
-                    height="100%" 
-                    style={{border:0}} 
-                    allowFullScreen={true}
-                    loading="lazy" 
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Google Map Location"
-                    ></iframe>
+            <div className="p-8 bg-base-100 rounded-lg shadow-md flex flex-col justify-center items-center h-96">
+                <LocationPinIcon className="w-20 h-20 text-primary mb-4" />
+                <h2 className="text-2xl font-bold text-primary mb-4 text-center">মানচিত্রে আমাদের খুঁজুন</h2>
+                <p className="text-center text-gray-600 mb-6">আমাদের অবস্থান দেখতে এবং দিকনির্দেশনা পেতে নিচের বাটনে ক্লিক করুন।</p>
+                <a 
+                    href={siteInfo.locationMapUrl || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full max-w-xs flex items-center justify-center p-4 bg-blue-600 text-white font-bold rounded-lg transition duration-300 transform hover:scale-105 hover:bg-blue-700 shadow-lg"
+                >
+                    <span>Google ম্যাপে দেখুন</span>
+                </a>
             </div>
           </div>
 
@@ -101,8 +84,8 @@ const Contact: React.FC<ContactProps> = ({ siteInfo }) => {
                     <ClockIcon className="w-6 h-6 mr-2 text-primary" />
                     <h3 className="font-semibold text-lg text-gray-800">অফিস সময়</h3>
                 </div>
-                <p>শনিবার - বৃহস্পতিবার</p>
-                <p>সকাল ৯:০০ টা - বিকাল ৪:০০ টা</p>
+                <p>{siteInfo.officeHoursDays}</p>
+                <p>{siteInfo.officeHoursTime}</p>
             </div>
           </div>
         </div>
