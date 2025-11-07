@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
@@ -43,7 +44,7 @@ import {
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedGalleryItemId, setSelectedGalleryItemId] = useState<string | null>(null);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
 
   // State for content, now using mock data
   const [notices, setNotices] = useState<Notice[]>(MOCK_NOTICES);
@@ -55,6 +56,42 @@ const App: React.FC = () => {
   const [digitalContents, setDigitalContents] = useState<Notice[]>(MOCK_DIGITAL_CONTENTS);
 
   useEffect(() => {
+    let unsubscribe: () => void;
+
+    const initializeAuth = async () => {
+      try {
+        const { auth } = await import('./firebaseConfig');
+        const { onAuthStateChanged } = await import('firebase/auth');
+        unsubscribe = onAuthStateChanged(auth, (user) => {
+          setIsAdminAuthenticated(!!user);
+        });
+      } catch (error) {
+        console.error("Firebase auth initialization failed:", error);
+        setIsAdminAuthenticated(false); // If Firebase fails, assume not logged in
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Redirect logic based on auth state and current page
+    if (isAdminAuthenticated === false && currentPage.startsWith('admin-') && currentPage !== 'admin-login') {
+      setCurrentPage('home');
+    }
+    if (isAdminAuthenticated === true && currentPage === 'admin-login') {
+      setCurrentPage('admin-dashboard');
+    }
+  }, [isAdminAuthenticated, currentPage]);
+
+
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage]);
   
@@ -63,20 +100,18 @@ const App: React.FC = () => {
     setCurrentPage('gallery-item');
   };
 
-  const handleLoginSuccess = () => {
-    setIsAdminAuthenticated(true);
-    setCurrentPage('admin-dashboard');
-  };
-
-  const handleLogout = () => {
-    setIsAdminAuthenticated(false);
-    setCurrentPage('home');
-  };
-
   const renderPage = () => {
+    if (isAdminAuthenticated === null) {
+      return (
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+      
     if (currentPage.startsWith('admin')) {
       if (!isAdminAuthenticated) {
-        return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
+        return <AdminLogin />;
       }
       
       let adminContent;
@@ -115,7 +150,7 @@ const App: React.FC = () => {
       }
       
       return (
-        <AdminLayout setCurrentPage={setCurrentPage} handleLogout={handleLogout} currentPage={currentPage}>
+        <AdminLayout setCurrentPage={setCurrentPage} currentPage={currentPage}>
           {adminContent}
         </AdminLayout>
       );

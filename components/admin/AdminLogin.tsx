@@ -1,23 +1,38 @@
 import React, { useState } from 'react';
 
-interface AdminLoginProps {
-  onLoginSuccess: () => void;
-}
-
-const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState('');
+const AdminLogin: React.FC = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, this would be a secure API call.
-    // For this demo, we use hardcoded credentials.
-    if (username === 'admin' && password === 'admin') {
-      setError('');
-      onLoginSuccess();
-    } else {
-      setError('ভুল ইউজারনেম অথবা পাসওয়ার্ড।');
+    setLoading(true);
+    setError('');
+    
+    try {
+      const { auth } = await import('../../firebaseConfig');
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged in App.tsx will handle successful login
+    } catch (e) {
+      const authError = e as { code: string };
+      switch (authError.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          setError('ভুল ইমেইল অথবা পাসওয়ার্ড।');
+          break;
+        case 'auth/invalid-email':
+          setError('অনুগ্রহ করে একটি সঠিক ইমেইল দিন।');
+          break;
+        default:
+          setError('লগইন করতে একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+          break;
+      }
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -28,18 +43,19 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
-              htmlFor="username"
+              htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              ইউজারনেম
+              ইমেইল
             </label>
             <input
-              id="username"
-              name="username"
-              type="text"
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
               required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
             />
           </div>
@@ -54,6 +70,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
               id="password"
               name="password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -64,9 +81,10 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           <div>
             <button
               type="submit"
-              className="w-full px-4 py-2 font-bold text-white bg-primary rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              disabled={loading}
+              className="w-full px-4 py-2 font-bold text-white bg-primary rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              লগইন করুন
+              {loading ? 'লগইন হচ্ছে...' : 'লগইন করুন'}
             </button>
           </div>
         </form>

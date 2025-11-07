@@ -18,11 +18,10 @@ import {
 interface AdminLayoutProps {
   children: React.ReactNode;
   setCurrentPage: (page: Page) => void;
-  handleLogout: () => void;
   currentPage: Page;
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children, setCurrentPage, handleLogout, currentPage }) => {
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children, setCurrentPage, currentPage }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     
   const navLinks: { id: Page, label: string, icon: React.ReactNode }[] = [
@@ -55,6 +54,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, setCurrentPage, han
     setIsSidebarOpen(false);
   };
 
+  const handleLogoutClick = async () => {
+    try {
+        const { auth } = await import('../../firebaseConfig');
+        const { signOut } = await import('firebase/auth');
+        await signOut(auth);
+        // Auth state listener in App.tsx will handle redirection
+    } catch (error) {
+        console.error("Error signing out:", error);
+        alert('লগ আউট করতে একটি সমস্যা হয়েছে।');
+    }
+  };
+
   const SidebarContent = () => (
     <>
       <div className="h-20 flex items-center justify-between px-4 bg-gray-900 flex-shrink-0">
@@ -85,7 +96,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, setCurrentPage, han
       </nav>
       <div className="p-4 border-t border-gray-700 flex-shrink-0">
           <button
-              onClick={handleLogout}
+              onClick={handleLogoutClick}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 font-bold text-red-300 bg-gray-700 rounded-lg hover:bg-red-600 hover:text-white transition-colors"
           >
               <LogoutIcon className="w-5 h-5"/>
