@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebaseConfig';
 import type { Page } from '../../types';
 import { 
     DashboardIcon, 
@@ -56,13 +58,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, setCurrentPage, cur
 
   const handleLogoutClick = async () => {
     try {
-        const { auth } = await import('../../firebaseConfig');
-        const { signOut } = await import('firebase/auth');
         await signOut(auth);
-        // Auth state listener in App.tsx will handle redirection
+        setCurrentPage('home');
     } catch (error) {
-        console.error("Error signing out:", error);
-        alert('লগ আউট করতে একটি সমস্যা হয়েছে।');
+        console.error("Error signing out: ", error);
     }
   };
 

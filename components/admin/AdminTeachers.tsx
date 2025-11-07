@@ -3,12 +3,14 @@ import type { Teacher } from '../../types';
 
 interface AdminTeachersProps {
   teachers: Teacher[];
-  onUpdateTeachers: (teachers: Teacher[]) => void;
+  onUpdateTeachers: (teachers: Teacher[]) => Promise<void>;
 }
 
 const AdminTeachers: React.FC<AdminTeachersProps> = ({ teachers, onUpdateTeachers }) => {
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   const generateId = () => Math.random().toString(36).substring(2, 10);
 
@@ -30,17 +32,24 @@ const AdminTeachers: React.FC<AdminTeachersProps> = ({ teachers, onUpdateTeacher
     setIsCreatingNew(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingTeacher) return;
+    setIsSaving(true);
     let updatedTeachers;
     if (isCreatingNew) {
       updatedTeachers = [...teachers, editingTeacher];
     } else {
       updatedTeachers = teachers.map(t => t.id === editingTeacher.id ? editingTeacher : t);
     }
-    onUpdateTeachers(updatedTeachers);
-    setEditingTeacher(null);
-    setIsCreatingNew(false);
+    
+    await onUpdateTeachers(updatedTeachers);
+    setSuccessMessage('শিক্ষকের তথ্য সফলভাবে সংরক্ষণ করা হয়েছে!');
+    setTimeout(() => {
+      setSuccessMessage('');
+      setEditingTeacher(null);
+      setIsCreatingNew(false);
+      setIsSaving(false);
+    }, 3000);
   };
 
   const handleDelete = (teacherId: string) => {
@@ -99,7 +108,7 @@ const AdminTeachers: React.FC<AdminTeachersProps> = ({ teachers, onUpdateTeacher
             </div>
           </div>
           <div className="mt-8 flex gap-4">
-            <button onClick={handleSave} className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary font-semibold transition-colors">সংরক্ষণ করুন</button>
+            <button onClick={handleSave} disabled={isSaving} className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary font-semibold transition-colors disabled:bg-gray-400">{isSaving ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন'}</button>
             <button onClick={() => setEditingTeacher(null)} className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 font-semibold transition-colors">বাতিল করুন</button>
           </div>
         </div>
@@ -108,6 +117,11 @@ const AdminTeachers: React.FC<AdminTeachersProps> = ({ teachers, onUpdateTeacher
 
   return (
     <>
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md">
+            {successMessage}
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <p className="text-gray-600 max-w-2xl">
           এখানে আপনি শিক্ষকদের তালিকা দেখতে, নতুন শিক্ষক যোগ করতে, এবং বিদ্যমান তথ্য পরিবর্তন বা মুছে ফেলতে পারবেন।

@@ -3,12 +3,13 @@ import type { SiteInfo } from '../../types';
 
 interface AdminSiteInfoProps {
   siteInfo: SiteInfo;
-  onSave: (newInfo: SiteInfo) => void;
+  onSave: (newInfo: SiteInfo) => Promise<void>;
 }
 
 const AdminSiteInfo: React.FC<AdminSiteInfoProps> = ({ siteInfo, onSave }) => {
   const [formData, setFormData] = useState<SiteInfo>(siteInfo);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setFormData(siteInfo);
@@ -31,12 +32,16 @@ const AdminSiteInfo: React.FC<AdminSiteInfoProps> = ({ siteInfo, onSave }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    setIsSaving(true);
+    await onSave(formData);
     setSuccessMessage('তথ্য সফলভাবে আপডেট করা হয়েছে!');
     window.scrollTo(0, 0);
-    setTimeout(() => setSuccessMessage(''), 3000);
+    setTimeout(() => {
+      setSuccessMessage('');
+      setIsSaving(false);
+    }, 3000);
   };
   
   const renderImagePreview = (src: string, alt: string) => (
@@ -108,9 +113,10 @@ const AdminSiteInfo: React.FC<AdminSiteInfoProps> = ({ siteInfo, onSave }) => {
           <div className="pt-4">
               <button
                 type="submit"
-                className="w-full px-6 py-3 font-bold text-white bg-primary rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors text-lg"
+                disabled={isSaving}
+                className="w-full px-6 py-3 font-bold text-white bg-primary rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors text-lg disabled:bg-gray-400"
               >
-                পরিবর্তনগুলি সংরক্ষণ করুন
+                {isSaving ? 'সংরক্ষণ হচ্ছে...' : 'পরিবর্তনগুলি সংরক্ষণ করুন'}
               </button>
           </div>
 

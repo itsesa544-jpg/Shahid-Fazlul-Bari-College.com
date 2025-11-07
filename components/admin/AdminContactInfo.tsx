@@ -3,7 +3,7 @@ import type { SiteInfo } from '../../types';
 
 interface AdminContactInfoProps {
   siteInfo: SiteInfo;
-  onSave: (newInfo: SiteInfo) => void;
+  onSave: (newInfo: SiteInfo) => Promise<void>;
 }
 
 const AdminContactInfo: React.FC<AdminContactInfoProps> = ({ siteInfo, onSave }) => {
@@ -16,6 +16,7 @@ const AdminContactInfo: React.FC<AdminContactInfoProps> = ({ siteInfo, onSave })
     locationMapUrl: siteInfo.locationMapUrl,
   });
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setFormData({
@@ -33,12 +34,16 @@ const AdminContactInfo: React.FC<AdminContactInfoProps> = ({ siteInfo, onSave })
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ ...siteInfo, ...formData });
+    setIsSaving(true);
+    await onSave({ ...siteInfo, ...formData });
     setSuccessMessage('যোগাযোগের তথ্য সফলভাবে আপডেট করা হয়েছে!');
     window.scrollTo(0, 0);
-    setTimeout(() => setSuccessMessage(''), 3000);
+    setTimeout(() => {
+        setSuccessMessage('');
+        setIsSaving(false);
+    }, 3000);
   };
 
   const formFields = [
@@ -78,9 +83,10 @@ const AdminContactInfo: React.FC<AdminContactInfoProps> = ({ siteInfo, onSave })
           <div className="pt-4">
               <button
                 type="submit"
-                className="w-full px-6 py-3 font-bold text-white bg-primary rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors text-lg"
+                disabled={isSaving}
+                className="w-full px-6 py-3 font-bold text-white bg-primary rounded-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors text-lg disabled:bg-gray-400"
               >
-                পরিবর্তনগুলি সংরক্ষণ করুন
+                {isSaving ? 'সংরক্ষণ হচ্ছে...' : 'পরিবর্তনগুলি সংরক্ষণ করুন'}
               </button>
           </div>
 

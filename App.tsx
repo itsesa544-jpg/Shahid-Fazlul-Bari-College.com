@@ -1,4 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
+import { get, ref, set } from 'firebase/database';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth, db } from './firebaseConfig';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -16,7 +20,6 @@ import Result from './components/Result';
 import Videos from './components/Videos';
 import DigitalContent from './components/DigitalContent';
 import ClassRoutine from './components/ClassRoutine';
-import AdminLogin from './components/admin/AdminLogin';
 import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminSiteInfo from './components/admin/AdminSiteInfo';
@@ -27,7 +30,9 @@ import AdminRoutines from './components/admin/AdminRoutines';
 import AdminDigitalContent from './components/admin/AdminDigitalContent';
 import AdminGallery from './components/admin/AdminGallery';
 import AdminContactInfo from './components/admin/AdminContactInfo';
+import AdminLogin from './components/admin/AdminLogin';
 import Chatbot from './components/Chatbot';
+import LoadingSpinner from './components/LoadingSpinner';
 
 import type { Page, Notice, Teacher, GalleryItem, SiteInfo } from './types';
 import { 
@@ -40,128 +45,98 @@ import {
     MOCK_DIGITAL_CONTENTS
 } from './constants';
 
-// Helper function to get initial state from localStorage or fallback to a default value
-const getInitialState = <T,>(key: string, defaultValue: T): T => {
-  try {
-    const storedValue = localStorage.getItem(key);
-    if (storedValue) {
-      return JSON.parse(storedValue);
-    }
-  } catch (error) {
-    console.error(`Error reading from localStorage key “${key}”:`, error);
-    // If there's an error, it's safer to clear the corrupted key
-    localStorage.removeItem(key);
-  }
-  return defaultValue;
-};
-
-
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedGalleryItemId, setSelectedGalleryItemId] = useState<string | null>(null);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
 
-  // State for content, now using persisted state
-  const [notices, setNotices] = useState<Notice[]>(() => getInitialState('app_notices', MOCK_NOTICES));
-  const [teachers, setTeachers] = useState<Teacher[]>(() => getInitialState('app_teachers', MOCK_TEACHERS));
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => getInitialState('app_gallery_items', MOCK_GALLERY_ITEMS));
-  const [siteInfo, setSiteInfo] = useState<SiteInfo>(() => getInitialState('app_site_info', DEFAULT_SITE_INFO));
-  const [results, setResults] = useState<Notice[]>(() => getInitialState('app_results', MOCK_RESULTS));
-  const [routines, setRoutines] = useState<Notice[]>(() => getInitialState('app_routines', MOCK_ROUTINES));
-  const [digitalContents, setDigitalContents] = useState<Notice[]>(() => getInitialState('app_digital_contents', MOCK_DIGITAL_CONTENTS));
-
-  // Effects to persist state to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('app_notices', JSON.stringify(notices));
-    } catch (error) {
-      console.error('Failed to save notices to localStorage:', error);
-    }
-  }, [notices]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('app_teachers', JSON.stringify(teachers));
-    } catch (error) {
-      console.error('Failed to save teachers to localStorage:', error);
-    }
-  }, [teachers]);
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO);
+  const [results, setResults] = useState<Notice[]>([]);
+  const [routines, setRoutines] = useState<Notice[]>([]);
+  const [digitalContents, setDigitalContents] = useState<Notice[]>([]);
   
-  useEffect(() => {
-    try {
-      localStorage.setItem('app_gallery_items', JSON.stringify(galleryItems));
-    } catch (error) {
-      console.error('Failed to save gallery items to localStorage:', error);
-    }
-  }, [galleryItems]);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('app_site_info', JSON.stringify(siteInfo));
-    } catch (error) {
-      console.error('Failed to save site info to localStorage:', error);
-    }
-  }, [siteInfo]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('app_results', JSON.stringify(results));
-    } catch (error) {
-      console.error('Failed to save results to localStorage:', error);
-    }
-  }, [results]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('app_routines', JSON.stringify(routines));
-    } catch (error) {
-      console.error('Failed to save routines to localStorage:', error);
-    }
-  }, [routines]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('app_digital_contents', JSON.stringify(digitalContents));
-    } catch (error) {
-      console.error('Failed to save digital contents to localStorage:', error);
-    }
-  }, [digitalContents]);
-
-
-  useEffect(() => {
-    let unsubscribe: () => void;
-
-    const initializeAuth = async () => {
-      try {
-        const { auth } = await import('./firebaseConfig');
-        const { onAuthStateChanged } = await import('firebase/auth');
-        unsubscribe = onAuthStateChanged(auth, (user) => {
-          setIsAdminAuthenticated(!!user);
-        });
-      } catch (error) {
-        console.error("Firebase auth initialization failed:", error);
-        setIsAdminAuthenticated(false); // If Firebase fails, assume not logged in
-      }
-    };
-
-    initializeAuth();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    // Redirect logic based on auth state and current page
-    if (isAdminAuthenticated === false && currentPage.startsWith('admin-') && currentPage !== 'admin-login') {
-      setCurrentPage('home');
-    }
-    if (isAdminAuthenticated === true && currentPage === 'admin-login') {
-      setCurrentPage('admin-dashboard');
-    }
-  }, [isAdminAuthenticated, currentPage]);
+    const fetchData = async () => {
+        try {
+            const dataMapping = {
+                'siteInfo': { setter: setSiteInfo, fallback: DEFAULT_SITE_INFO },
+                'teachers': { setter: setTeachers, fallback: MOCK_TEACHERS },
+                'notices': { setter: setNotices, fallback: MOCK_NOTICES },
+                'galleryItems': { setter: setGalleryItems, fallback: MOCK_GALLERY_ITEMS },
+                'results': { setter: setResults, fallback: MOCK_RESULTS },
+                'routines': { setter: setRoutines, fallback: MOCK_ROUTINES },
+                'digitalContents': { setter: setDigitalContents, fallback: MOCK_DIGITAL_CONTENTS },
+            };
+
+            for (const [key, { setter, fallback }] of Object.entries(dataMapping)) {
+                const snapshot = await get(ref(db, key));
+                if (snapshot.exists()) {
+                    setter(snapshot.val());
+                } else {
+                    // If data doesn't exist in Firebase, set it with mock data
+                    await set(ref(db, key), fallback);
+                    setter(fallback);
+                }
+            }
+        } catch (error) {
+            console.error("Firebase read failed:", error);
+            // Fallback to mock data on error
+            setSiteInfo(DEFAULT_SITE_INFO);
+            setTeachers(MOCK_TEACHERS);
+            setNotices(MOCK_NOTICES);
+            setGalleryItems(MOCK_GALLERY_ITEMS);
+            setResults(MOCK_RESULTS);
+            setRoutines(MOCK_ROUTINES);
+            setDigitalContents(MOCK_DIGITAL_CONTENTS);
+        } finally {
+            setDataLoading(false);
+        }
+    };
+    fetchData();
+  }, []);
+
+  const handleSetSiteInfo = async (newInfo: SiteInfo) => {
+    await set(ref(db, 'siteInfo'), newInfo);
+    setSiteInfo(newInfo);
+  };
+  const handleSetTeachers = async (newTeachers: Teacher[]) => {
+    await set(ref(db, 'teachers'), newTeachers);
+    setTeachers(newTeachers);
+  };
+  const handleSetNotices = async (newNotices: Notice[]) => {
+    await set(ref(db, 'notices'), newNotices);
+    setNotices(newNotices);
+  };
+  const handleSetResults = async (newResults: Notice[]) => {
+    await set(ref(db, 'results'), newResults);
+    setResults(newResults);
+  };
+  const handleSetRoutines = async (newRoutines: Notice[]) => {
+    await set(ref(db, 'routines'), newRoutines);
+    setRoutines(newRoutines);
+  };
+  const handleSetDigitalContents = async (newContents: Notice[]) => {
+    await set(ref(db, 'digitalContents'), newContents);
+    setDigitalContents(newContents);
+  };
+  const handleSetGalleryItems = async (newItems: GalleryItem[]) => {
+    await set(ref(db, 'galleryItems'), newItems);
+    setGalleryItems(newItems);
+  };
 
 
   useEffect(() => {
@@ -172,53 +147,51 @@ const App: React.FC = () => {
     setSelectedGalleryItemId(id);
     setCurrentPage('gallery-item');
   };
+  
+  if (authLoading || dataLoading) {
+    return <LoadingSpinner />;
+  }
 
   const renderPage = () => {
-    if (isAdminAuthenticated === null) {
-      return (
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      );
-    }
-      
     if (currentPage.startsWith('admin')) {
-      if (!isAdminAuthenticated) {
-        return <AdminLogin />;
+      if (!user) {
+        if (currentPage !== 'admin-login') {
+             // Redirect to login if not authenticated
+             return <AdminLogin setCurrentPage={setCurrentPage} />;
+        }
+        return <AdminLogin setCurrentPage={setCurrentPage} />;
       }
-      
+
       let adminContent;
       switch (currentPage) {
         case 'admin-dashboard':
-        case 'admin-login':
           adminContent = <AdminDashboard setCurrentPage={setCurrentPage} />;
           break;
         case 'admin-site-info':
-          adminContent = <AdminSiteInfo siteInfo={siteInfo} onSave={setSiteInfo} />;
+          adminContent = <AdminSiteInfo siteInfo={siteInfo} onSave={handleSetSiteInfo} />;
           break;
         case 'admin-teachers':
-          adminContent = <AdminTeachers teachers={teachers} onUpdateTeachers={setTeachers} />;
+          adminContent = <AdminTeachers teachers={teachers} onUpdateTeachers={handleSetTeachers} />;
           break;
         case 'admin-notices':
-          adminContent = <AdminNotices notices={notices} onUpdateNotices={setNotices} />;
+          adminContent = <AdminNotices notices={notices} onUpdateNotices={handleSetNotices} />;
           break;
         case 'admin-results':
-          adminContent = <AdminResults results={results} onUpdateResults={setResults} />;
+          adminContent = <AdminResults results={results} onUpdateResults={handleSetResults} />;
           break;
         case 'admin-routines':
-          adminContent = <AdminRoutines routines={routines} onUpdateRoutines={setRoutines} />;
+          adminContent = <AdminRoutines routines={routines} onUpdateRoutines={handleSetRoutines} />;
           break;
         case 'admin-digital-content':
-          adminContent = <AdminDigitalContent contents={digitalContents} onUpdateContents={setDigitalContents} />;
+          adminContent = <AdminDigitalContent contents={digitalContents} onUpdateContents={handleSetDigitalContents} />;
           break;
         case 'admin-gallery':
-          adminContent = <AdminGallery galleryItems={galleryItems} onUpdateGallery={setGalleryItems} />;
+          adminContent = <AdminGallery galleryItems={galleryItems} onUpdateGallery={handleSetGalleryItems} />;
           break;
         case 'admin-contact-info':
-          adminContent = <AdminContactInfo siteInfo={siteInfo} onSave={setSiteInfo} />;
+          adminContent = <AdminContactInfo siteInfo={siteInfo} onSave={handleSetSiteInfo} />;
           break;
         default:
-          setCurrentPage('admin-dashboard');
           adminContent = <AdminDashboard setCurrentPage={setCurrentPage} />;
       }
       
@@ -247,8 +220,7 @@ const App: React.FC = () => {
           if (selectedItem) {
               return <GalleryItemDetail item={selectedItem} setCurrentPage={setCurrentPage} />;
           }
-          setCurrentPage('gallery');
-          return <Gallery galleryItems={galleryItems} onViewItem={viewGalleryItem} />;
+           return <Gallery galleryItems={galleryItems} onViewItem={viewGalleryItem} />;
       }
       case 'teachers':
         return <Teachers teachers={teachers} />;
@@ -265,7 +237,6 @@ const App: React.FC = () => {
       case 'class-routine':
         return <ClassRoutine routines={routines} />;
       default:
-        setCurrentPage('home');
         return <Home setCurrentPage={setCurrentPage} notices={notices} siteInfo={siteInfo} />;
     }
   };

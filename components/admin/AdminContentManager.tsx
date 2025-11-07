@@ -3,7 +3,7 @@ import type { Notice } from '../../types';
 
 interface AdminContentManagerProps {
   items: Notice[];
-  onUpdateItems: (items: Notice[]) => void;
+  onUpdateItems: (items: Notice[]) => Promise<void>;
   title: string;
   itemTypeLabel: string;
 }
@@ -11,6 +11,8 @@ interface AdminContentManagerProps {
 const AdminContentManager: React.FC<AdminContentManagerProps> = ({ items, onUpdateItems, title, itemTypeLabel }) => {
   const [editingItem, setEditingItem] = useState<Notice | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   const generateId = () => Math.random().toString(36).substring(2, 10);
 
@@ -36,17 +38,25 @@ const AdminContentManager: React.FC<AdminContentManagerProps> = ({ items, onUpda
     setIsCreatingNew(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingItem) return;
+    setIsSaving(true);
     let updatedItems;
     if (isCreatingNew) {
-      updatedItems = [...items, editingItem];
+      // Prepend new items to show them at the top
+      updatedItems = [editingItem, ...items];
     } else {
       updatedItems = items.map(t => t.id === editingItem.id ? editingItem : t);
     }
-    onUpdateItems(updatedItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    setEditingItem(null);
-    setIsCreatingNew(false);
+    
+    await onUpdateItems(updatedItems);
+    setSuccessMessage(`${itemTypeLabel} সফলভাবে সংরক্ষণ করা হয়েছে!`);
+    setTimeout(() => {
+        setSuccessMessage('');
+        setEditingItem(null);
+        setIsCreatingNew(false);
+        setIsSaving(false);
+    }, 3000);
   };
 
   const handleDelete = (itemId: string) => {
@@ -94,7 +104,7 @@ const AdminContentManager: React.FC<AdminContentManagerProps> = ({ items, onUpda
             </div>
           </div>
           <div className="mt-8 flex gap-4">
-            <button onClick={handleSave} className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary font-semibold transition-colors">সংরক্ষণ করুন</button>
+            <button onClick={handleSave} disabled={isSaving} className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary font-semibold transition-colors disabled:bg-gray-400">{isSaving ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন'}</button>
             <button onClick={() => setEditingItem(null)} className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 font-semibold transition-colors">বাতিল করুন</button>
           </div>
         </div>
@@ -103,6 +113,11 @@ const AdminContentManager: React.FC<AdminContentManagerProps> = ({ items, onUpda
 
   return (
     <>
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md">
+            {successMessage}
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <p className="text-gray-600 max-w-2xl">
           এখানে আপনি {itemTypeLabel} তালিকা দেখতে, নতুন {itemTypeLabel} যোগ করতে, এবং বিদ্যমান তথ্য পরিবর্তন বা মুছে ফেলতে পারবেন।

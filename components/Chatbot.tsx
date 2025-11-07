@@ -38,7 +38,8 @@ const Chatbot: React.FC = () => {
         try {
             if (!process.env.API_KEY) {
                 console.error("API_KEY is not set.");
-                setError("চ্যাট এই মুহূর্তে недоступен।");
+                // FIX: Corrected a typo in the error message to use Bengali consistently.
+                setError("চ্যাট এই মুহূর্তে উপলব্ধ নয়।");
                 return;
             }
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
