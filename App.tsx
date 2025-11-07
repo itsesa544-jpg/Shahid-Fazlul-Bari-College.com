@@ -40,20 +40,93 @@ import {
     MOCK_DIGITAL_CONTENTS
 } from './constants';
 
+// Helper function to get initial state from localStorage or fallback to a default value
+const getInitialState = <T,>(key: string, defaultValue: T): T => {
+  try {
+    const storedValue = localStorage.getItem(key);
+    if (storedValue) {
+      return JSON.parse(storedValue);
+    }
+  } catch (error) {
+    console.error(`Error reading from localStorage key “${key}”:`, error);
+    // If there's an error, it's safer to clear the corrupted key
+    localStorage.removeItem(key);
+  }
+  return defaultValue;
+};
+
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedGalleryItemId, setSelectedGalleryItemId] = useState<string | null>(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
 
-  // State for content, now using mock data
-  const [notices, setNotices] = useState<Notice[]>(MOCK_NOTICES);
-  const [teachers, setTeachers] = useState<Teacher[]>(MOCK_TEACHERS);
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(MOCK_GALLERY_ITEMS);
-  const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO);
-  const [results, setResults] = useState<Notice[]>(MOCK_RESULTS);
-  const [routines, setRoutines] = useState<Notice[]>(MOCK_ROUTINES);
-  const [digitalContents, setDigitalContents] = useState<Notice[]>(MOCK_DIGITAL_CONTENTS);
+  // State for content, now using persisted state
+  const [notices, setNotices] = useState<Notice[]>(() => getInitialState('app_notices', MOCK_NOTICES));
+  const [teachers, setTeachers] = useState<Teacher[]>(() => getInitialState('app_teachers', MOCK_TEACHERS));
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => getInitialState('app_gallery_items', MOCK_GALLERY_ITEMS));
+  const [siteInfo, setSiteInfo] = useState<SiteInfo>(() => getInitialState('app_site_info', DEFAULT_SITE_INFO));
+  const [results, setResults] = useState<Notice[]>(() => getInitialState('app_results', MOCK_RESULTS));
+  const [routines, setRoutines] = useState<Notice[]>(() => getInitialState('app_routines', MOCK_ROUTINES));
+  const [digitalContents, setDigitalContents] = useState<Notice[]>(() => getInitialState('app_digital_contents', MOCK_DIGITAL_CONTENTS));
+
+  // Effects to persist state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_notices', JSON.stringify(notices));
+    } catch (error) {
+      console.error('Failed to save notices to localStorage:', error);
+    }
+  }, [notices]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_teachers', JSON.stringify(teachers));
+    } catch (error) {
+      console.error('Failed to save teachers to localStorage:', error);
+    }
+  }, [teachers]);
+  
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_gallery_items', JSON.stringify(galleryItems));
+    } catch (error) {
+      console.error('Failed to save gallery items to localStorage:', error);
+    }
+  }, [galleryItems]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_site_info', JSON.stringify(siteInfo));
+    } catch (error) {
+      console.error('Failed to save site info to localStorage:', error);
+    }
+  }, [siteInfo]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_results', JSON.stringify(results));
+    } catch (error) {
+      console.error('Failed to save results to localStorage:', error);
+    }
+  }, [results]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_routines', JSON.stringify(routines));
+    } catch (error) {
+      console.error('Failed to save routines to localStorage:', error);
+    }
+  }, [routines]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_digital_contents', JSON.stringify(digitalContents));
+    } catch (error) {
+      console.error('Failed to save digital contents to localStorage:', error);
+    }
+  }, [digitalContents]);
+
 
   useEffect(() => {
     let unsubscribe: () => void;
