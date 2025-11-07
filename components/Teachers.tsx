@@ -30,6 +30,7 @@ const TeacherDetailModal: React.FC<TeacherDetailModalProps> = ({ teacher, onClos
             <img src={teacher.imageUrl} alt={teacher.name} className="w-full md:w-48 h-64 object-cover rounded-lg shadow-md" />
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-gray-800">{teacher.designation}</h3>
+               <p className="text-md text-gray-500 mt-1">রোল: {teacher.roll}</p>
               <div className="mt-4 space-y-4">
                 <div>
                   <h4 className="font-semibold text-primary">শিক্ষাগত যোগ্যতা</h4>

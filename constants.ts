@@ -94,7 +94,8 @@ export const MOCK_TEACHERS: Teacher[] = [
     designation: 'প্রতিষ্ঠাতা ও অধ্যক্ষ', 
     imageUrl: 'https://picsum.photos/seed/1/400/400', 
     educationalQualification: '- স্নাতকোত্তর (Master’s) ডিগ্রি।\n- শিক্ষা প্রশাসনে ২০ বছরের অভিজ্ঞতা।',
-    additionalQualities: '- দূরদর্শী ও দক্ষ নেতৃত্বগুণ।\n- শিক্ষার্থীদের প্রতি সহানুভূতি ও দায়িত্ববোধ।' 
+    additionalQualities: '- দূরদর্শী ও দক্ষ নেতৃত্বগুণ।\n- শিক্ষার্থীদের প্রতি সহানুভূতি ও দায়িত্ববোধ।',
+    roll: 'T-001'
   },
   { 
     id: '2', 
@@ -102,7 +103,8 @@ export const MOCK_TEACHERS: Teacher[] = [
     designation: 'সহকারী অধ্যাপক (বাণিজ্য)', 
     imageUrl: 'https://picsum.photos/seed/2/400/400', 
     educationalQualification: '- বাণিজ্য বিভাগে স্নাতকোত্তর।\n- B.Ed (Bachelor of Education) ডিগ্রি।',
-    additionalQualities: '- জটিল বিষয় সহজভাবে বোঝানোর দক্ষতা।\n- ধৈর্য ও নৈতিকতা।'
+    additionalQualities: '- জটিল বিষয় সহজভাবে বোঝানোর দক্ষতা।\n- ধৈর্য ও নৈতিকতা।',
+    roll: 'T-002'
   },
   { 
     id: '3', 
@@ -110,7 +112,8 @@ export const MOCK_TEACHERS: Teacher[] = [
     designation: 'ইন্সট্রাক্টর (কম্পিউটার)', 
     imageUrl: 'https://picsum.photos/seed/3/400/400', 
     educationalQualification: '- কম্পিউটার সায়েন্সে স্নাতক (B.Sc)।\n- প্রোগ্রামিং ও নেটওয়ার্কিং-এ বিশেষ পারদর্শী।',
-    additionalQualities: '- প্রযুক্তিগত উদ্ভাবনে আগ্রহী।\n- শিক্ষার্থীদের হাতে-কলমে শেখানোর দক্ষতা।'
+    additionalQualities: '- প্রযুক্তিগত উদ্ভাবনে আগ্রহী।\n- শিক্ষার্থীদের হাতে-কলমে শেখানোর দক্ষতা।',
+    roll: 'T-003'
   },
   { 
     id: '4', 
@@ -118,7 +121,8 @@ export const MOCK_TEACHERS: Teacher[] = [
     designation: 'ইন্সট্রাক্টর (ইলেকট্রিক্যাল)', 
     imageUrl: 'https://picsum.photos/seed/4/400/400', 
     educationalQualification: '- ইলেকট্রিক্যাল ইঞ্জিনিয়ারিংয়ে ডিপ্লোমা।\n- বাস্তবভিত্তিক প্রশিক্ষণে ৫ বছরের অভিজ্ঞতা।',
-    additionalQualities: '- কর্মমুখী শিক্ষাদানে পারদর্শী।\n- নিরাপত্তা ও 규وابলি সম্পর্কে সচেতন।'
+    additionalQualities: '- কর্মমুখী শিক্ষাদানে পারদর্শী।\n- নিরাপত্তা ও 규وابলি সম্পর্কে সচেতন।',
+    roll: 'T-004'
   },
   { 
     id: '5', 
@@ -126,7 +130,8 @@ export const MOCK_TEACHERS: Teacher[] = [
     designation: 'প্রভাষক (হিসাববিজ্ঞান)', 
     imageUrl: 'https://picsum.photos/seed/5/400/400', 
     educationalQualification: '- হিসাববিজ্ঞানে স্নাতকোত্তর।\n- NTRCA সনদপ্রাপ্ত।',
-    additionalQualities: '- সঠিক ও নির্ভুলভাবে হিসাব শিক্ষাদানে দক্ষ।\n- শিক্ষার্থীদের প্রতি দায়িত্বশীল।'
+    additionalQualities: '- সঠিক ও নির্ভুলভাবে হিসাব শিক্ষাদানে দক্ষ।\n- শিক্ষার্থীদের প্রতি দায়িত্বশীল।',
+    roll: 'T-005'
   },
   { 
     id: '6', 
@@ -134,7 +139,8 @@ export const MOCK_TEACHERS: Teacher[] = [
     designation: 'প্রভাষক (ব্যবস্থাপনা)', 
     imageUrl: 'https://picsum.photos/seed/6/400/400', 
     educationalQualification: '- ব্যবস্থাপনা বিষয়ে স্নাতকোত্তর।\n- ব্যবসায় প্রশাসনে বিশেষ জ্ঞান।',
-    additionalQualities: '- চমৎকার উপস্থাপনা ও যোগাযোগের দক্ষতা।\n- শিক্ষার্থীদের অনুপ্রাণিত করতে সক্ষম।'
+    additionalQualities: '- চমৎকার উপস্থাপনা ও যোগাযোগের দক্ষতা।\n- শিক্ষার্থীদের অনুপ্রাণিত করতে সক্ষম।',
+    roll: 'T-006'
   },
 ];
 

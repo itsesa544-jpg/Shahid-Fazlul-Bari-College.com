@@ -2,14 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2ntCggFFRFQrf87MlAk6TKQguapre12U",
-  authDomain: "myawesom-d8265.firebaseapp.com",
-  databaseURL: "https://myawesom-d8265-default-rtdb.firebaseio.com",
-  projectId: "myawesom-d8265",
-  storageBucket: "myawesom-d8265.firebasestorage.app",
-  messagingSenderId: "1012709227021",
-  appId: "1:1012709227021:web:ef557b6ee57926c69eb344",
-  measurementId: "G-9J8GFG42F0"
+  apiKey: "AIzaSyBq5fahLFliBzBJERLXVxmStwe1YUmE3d8",
+  authDomain: "shohidfozllulbari.firebaseapp.com",
+  databaseURL: "https://shohidfozllulbari-default-rtdb.firebaseio.com",
+  projectId: "shohidfozllulbari",
+  storageBucket: "shohidfozllulbari.firebasestorage.app",
+  messagingSenderId: "484574726071",
+  appId: "1:484574726071:web:3b2bc160e95527dadb0a32"
 };
 
 

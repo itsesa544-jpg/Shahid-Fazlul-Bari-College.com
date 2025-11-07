@@ -24,7 +24,8 @@ const AdminTeachers: React.FC<AdminTeachersProps> = ({ teachers, onUpdateTeacher
       designation: '',
       imageUrl: 'https://picsum.photos/seed/new/400/400',
       educationalQualification: '',
-      additionalQualities: ''
+      additionalQualities: '',
+      roll: ''
     });
     setIsCreatingNew(true);
   };
@@ -79,6 +80,10 @@ const AdminTeachers: React.FC<AdminTeachersProps> = ({ teachers, onUpdateTeacher
               <label className="block text-sm font-semibold text-gray-700">পদবি</label>
               <input type="text" name="designation" value={editingTeacher.designation} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md mt-1 focus:ring-primary focus:border-primary" />
             </div>
+             <div>
+              <label className="block text-sm font-semibold text-gray-700">রোল নম্বর</label>
+              <input type="text" name="roll" value={editingTeacher.roll} onChange={handleInputChange} className="w-full p-2 border border-gray-300 rounded-md mt-1 focus:ring-primary focus:border-primary" />
+            </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700">ছবি</label>
               <input type="file" accept="image/*" onChange={handleImageChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 mt-1" />
@@ -118,6 +123,7 @@ const AdminTeachers: React.FC<AdminTeachersProps> = ({ teachers, onUpdateTeacher
                 <div>
                   <h3 className="font-bold text-lg text-gray-800">{teacher.name}</h3>
                   <p className="text-gray-600">{teacher.designation}</p>
+                   <p className="text-sm text-gray-500">রোল: {teacher.roll}</p>
                 </div>
               </div>
               <div className="flex gap-2">

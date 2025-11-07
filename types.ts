@@ -24,6 +24,7 @@ export interface Teacher {
   imageUrl: string;
   educationalQualification: string;
   additionalQualities: string;
+  roll: string;
 }
 
 export interface GalleryItem {
